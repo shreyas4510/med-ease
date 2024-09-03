@@ -1,6 +1,4 @@
-import React from 'react';
-import logo from './logo.svg';
-import LandingPage from "./Pages/landingPage";
+import LandingPage from "./pages/landingPage";
 import './App.css';
 
 function App() {

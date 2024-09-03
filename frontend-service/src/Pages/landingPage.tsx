@@ -1,6 +1,6 @@
 function LandingPage() {
     return (
-        
+        <>Hello World</>
     )
 }
 

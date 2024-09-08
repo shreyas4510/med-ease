@@ -1,10 +1,11 @@
 import LandingPage from "./pages/landingPage";
 import './App.css';
+import Routes from "./routes";
 
 function App() {
   return (
     <div className="App">
-      <LandingPage />
+        <Routes />
     </div>
   );
 }

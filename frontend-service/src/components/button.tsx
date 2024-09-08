@@ -1,10 +1,5 @@
 import React from 'react';
-
-interface ButtonProps {
-    children: React.ReactNode;
-    onClick?: () => void;
-    className?: string;
-}
+import { ButtonProps } from './types/button';
 
 const Button: React.FC<ButtonProps> = ({ children, onClick, className }) => {
     return (
@@ -15,7 +10,7 @@ const Button: React.FC<ButtonProps> = ({ children, onClick, className }) => {
                 px-8 py-3
                 font-semibold
                 rounded
-                shadow-lg
+                shadow-xl
                 transition-transform
                 duration-300
                 hover:shadow-xl

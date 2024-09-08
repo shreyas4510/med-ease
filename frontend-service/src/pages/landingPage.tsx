@@ -109,7 +109,7 @@ const LandingPage = () => {
             <h1 className="font-bold text-4xl md:text-7xl mt-4 max-w-md mx-auto text-white font-poppins">Made Easy</h1>
           </div>
           <div className="flex justify-center">
-            <img src={Doctor} />
+            <img alt="" src={Doctor} />
           </div>
         </div>
         <Button

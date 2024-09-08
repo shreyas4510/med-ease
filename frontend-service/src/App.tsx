@@ -1,4 +1,3 @@
-import LandingPage from "./pages/landingPage";
 import './App.css';
 import Routes from "./routes";
 

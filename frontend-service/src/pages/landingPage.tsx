@@ -42,8 +42,8 @@ const LandingPage = () => {
         formData={[
           { label: 'Name', className: 'col-span-2 flex flex-col', type: 'text' },
           { label: 'Customer Care Number', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'City', className: 'col-span-2 flex flex-col', type: 'text' },
           { label: 'State', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'City', className: 'col-span-2 flex flex-col', type: 'text' },
           { label: 'Zipcode', className: 'col-span-2 flex flex-col', type: 'text' },
         ]}
       />

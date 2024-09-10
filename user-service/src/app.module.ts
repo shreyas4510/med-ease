@@ -5,7 +5,9 @@ import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true
+    }),
     MongooseModule.forRoot(process.env.DATABASE_URL),
     HospitalModule
   ],

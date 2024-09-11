@@ -2,6 +2,12 @@
 
 Booking Appointments Made Easy.
 
+## Prerequisites
+
+- **Docker**: Ensure Docker is installed on your system. You can download Docker from [Docker's official website](https://www.docker.com/get-started).
+
+- **Docker Compose**: Ensure Docker Compose is installed. It usually comes with Docker Desktop, but you can also install it separately if needed. For installation instructions, visit [Docker Compose installation guide](https://docs.docker.com/compose/install/).
+
 ## Project setup
 
 To get started with the Frontend Service, follow these simple steps:

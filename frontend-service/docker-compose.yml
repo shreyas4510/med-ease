@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    volumes:
+      - ${PWD}:/app/frontend-service
+      - /usr/src/app/node_modules
+    ports:
+      - "3000:3000"

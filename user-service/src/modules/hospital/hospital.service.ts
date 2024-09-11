@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Hospital } from './hospital.schema';
 import { Model } from 'mongoose';
@@ -23,15 +23,17 @@ export class HospitalService {
 
     async login(payload: LoginDto): Promise<TokenDto> {
         try {
-            const hospitalData = (
-                await this.hospitalModel.findOne({
+            let hospitalData = await this.hospitalModel.findOne({
                     email: payload.email,
                     password: payload.password
-                }).exec()
-            ).toJSON();
+                }).exec();
+            if (!hospitalData) {
+                throw new NotFoundException(`Hospital with credentials not found`);
+            }
 
-            delete hospitalData.password;
-            const token = await this.jwtService.signAsync(hospitalData);
+            const data = hospitalData.toJSON();
+            delete data.password;     
+            const token = await this.jwtService.signAsync(data);
             return { token };
         } catch (error) {
             throw error;
@@ -40,10 +42,14 @@ export class HospitalService {
 
     async addDepartments( hospitalData: HospitalDto, { departments }: DepartmentDto ): Promise<void> {
         try {
-            await this.hospitalModel.updateOne(
+            const res = await this.hospitalModel.updateOne(
                 { _id: hospitalData._id },
                 { departments }
             )
+
+            if(!res.modifiedCount) {
+                throw new NotFoundException(`Hospital with ID ${hospitalData._id} not found`);
+            }
             return;
         } catch (error) {
             throw error;

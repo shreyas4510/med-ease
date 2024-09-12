@@ -55,4 +55,15 @@ export class HospitalService {
             throw error;
         }
     }
+
+    async findHospitals( search: string ): Promise<Array<string>> {
+        try {
+            const searchTerm = new RegExp(search, 'i');
+            const res = await this.hospitalModel.find({ name: searchTerm });
+            const data = res.map(item => `${item.name}, ${item.zipCode}`);
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    }
 }

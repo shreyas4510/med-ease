@@ -2,7 +2,7 @@ import axios, { InternalAxiosRequestConfig, AxiosResponse, AxiosError, AxiosHead
 
 
 const api = axios.create({
-  baseURL: process.env.BACKENDURL,
+  baseURL: process.env.REACT_APP_BACKENDURL,
   timeout: 10000,  
   headers: {
     'Content-Type': 'application/json',

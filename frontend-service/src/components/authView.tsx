@@ -3,12 +3,15 @@ import { useEffect, useState } from "react";
 import { TProps } from "./types/authView";
 import Input from "./input";
 import Button from "./button";
+import * as yup from "yup";
+import { Formik, Form, Field, ErrorMessage } from "formik";
 
 const AuthView = ({
     title,
     top,
     formData,
-    handleReset
+    handleReset,
+    validationSchema
 }: TProps) => {
     const [isVisible, setIsVisible] = useState(false);
 
@@ -28,6 +31,16 @@ const AuthView = ({
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+
+    const initialValues = formData.reduce((acc, field) => {
+        acc[field.name] = ''; // Initialize each field with an empty string or default value
+        return acc;
+      }, {} as Record<string, any>);
+
+    const handleSubmit = (values: any) => {
+        console.log(values);
+    }
+
     return (
         <div className="relative h-full">
             <div className="bg-custom-gradient h-custom-25 absolute right-0 left-0 top-0">
@@ -45,20 +58,42 @@ const AuthView = ({
                 }
                 sx={{ maxWidth: '40rem' }}
             >
-                <CardContent className="grid grid-cols-2 gap-4">
-                    {
-                        formData.map(({
-                            label,
-                            type,
-                            className
-                        }) => (
-                            <div className={className}>
-                                <label className="text-start text-blue-500 font-medium">{label}</label>
-                                <Input type={type} placeholder={label} />
-                            </div>
-                        ))
-                    }
-                    <Button className="mx-auto col-span-2 text-white bg-blue-500">Submit</Button>
+                <CardContent>
+                    <Formik
+                        initialValues={ initialValues }
+                        validationSchema={ validationSchema }
+                        onSubmit={ handleSubmit }
+                    >
+                    {({ isSubmitting }) => (
+                            <Form className="grid grid-cols-2 gap-4">
+                                {formData.map(({ label, name, type, className }) => (
+                                    <div key={name} className={className}>
+                                        <label className="text-start text-blue-500 font-medium">{label}</label>
+                                        <Field
+                                            type={type}
+                                            name={name}
+                                            placeholder={label}
+                                            as={Input}
+                                            className="form-input" // Use your input class for styling
+                                        />
+                                        <ErrorMessage
+                                            name={name}
+                                            component="div"
+                                            className="text-red-500 text-sm mt-1"
+                                        />
+                                    </div>
+                                ))}
+                                
+                                <Button
+                                    type="submit"
+                                    className="mx-auto col-span-2 text-white bg-blue-500"
+                                    disabled={isSubmitting}
+                                >
+                                    Submit
+                                </Button>
+                            </Form>
+                        )}
+                    </Formik>
                 </CardContent>
             </Card>
         </div>

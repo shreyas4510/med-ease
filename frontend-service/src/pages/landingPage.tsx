@@ -4,6 +4,8 @@ import { useContext } from "../context";
 import { authView } from "../context/types";
 import AuthView from "../components/authView";
 
+import { object, string, number, date } from 'yup';
+
 const LandingPage = () => {
   const { state, setAuth } = useContext();
 
@@ -19,15 +21,25 @@ const LandingPage = () => {
         top={'top-8'}
         handleReset={handleReset}
         formData={[
-          { label: 'Name', className: 'col-span-1 flex flex-col', type: 'text' },
-          { label: 'Age', className: 'col-span-1 flex flex-col', type: 'number' },
-          { label: 'Contact', className: 'col-span-1 flex flex-col', type: 'text' },
-          { label: 'City', className: 'col-span-1 flex flex-col', type: 'text' },
-          { label: 'Speciality', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'Hospital', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'Doctor', className: 'col-span-1 flex flex-col', type: 'text' },
-          { label: 'Appointment Date', className: 'col-span-1 flex flex-col', type: 'text' }
+          { label: 'Name', name: 'name', className: 'col-span-1 flex flex-col', type: 'text' },
+          { label: 'Age', name: 'age', className: 'col-span-1 flex flex-col', type: 'number' },
+          { label: 'Contact', name: 'contact', className: 'col-span-1 flex flex-col', type: 'text' },
+          { label: 'City', name: 'city', className: 'col-span-1 flex flex-col', type: 'text' },
+          { label: 'Speciality', name: 'speciality', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'Hospital', name: 'hospital', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'Doctor', name: 'doctor', className: 'col-span-1 flex flex-col', type: 'text' },
+          { label: 'Appointment Date', name: 'appDate', className: 'col-span-1 flex flex-col', type: 'date' }
         ]}
+        validationSchema={ object({
+          name: string().required('Name is required'),
+          age: number().required('Age is required'),
+          contact: string().required('Phone number is required').matches(/^\d{10}$/, 'Phone number must be exactly 10 digits'),
+          city: string().required('City is required'),
+          speciality: string().required('Speciality is required'),
+          hospital: string().required('Hospital is required'),
+          doctor: string().required('Doctor name is reuired'),
+          appDate: date().required('Appointment date is required')
+        }) }
       />
     )
   }
@@ -40,12 +52,19 @@ const LandingPage = () => {
         top={'top-12'}
         handleReset={handleReset}
         formData={[
-          { label: 'Name', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'Customer Care Number', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'City', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'State', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'Zipcode', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'Name', name: 'name', className: 'col-sp8an-2 flex flex-col', type: 'text' },
+          { label: 'Customer Care Number', name: 'cutmCareNum', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'City', name: 'city', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'State', name: 'state', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'Zipcode', name: 'zipcode', className: 'col-span-2 flex flex-col', type: 'text' },
         ]}
+        validationSchema={ object({
+          name: string().required("name is required"),
+          cutmCareNum: string().required('Phone number is required').matches(/^\d{10}$/, 'Cutomer care number must be exactly 10 digits'),
+          city: string().required("city is required"),
+          state: string().required("state is rewuired"),
+          zipcode: number().required('zipcode is required')
+        }) }
       />
     )
   }
@@ -58,12 +77,18 @@ const LandingPage = () => {
         top={'top-8'}
         handleReset={handleReset}
         formData={[
-          { label: 'Name', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'Experience', className: 'col-span-2 flex flex-col', type: 'number' },
-          { label: 'Speciality', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'Hospital', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'Name', name:'name', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'Experience', name: 'experience', className: 'col-span-2 flex flex-col', type: 'number' },
+          { label: 'Speciality', name: 'speciality', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'Hospital', name: 'hospital', className: 'col-span-2 flex flex-col', type: 'text' },
 
         ]}
+        validationSchema={ object({
+          name: string().required("Doctor name is required"),
+          experience: number().required("Experience is required").min(0, "experience should be greater than 0"),
+          speciality: string().required(" Speciality is required"),
+          hospital: string().required("Hospital is required")
+        }) }
       />
     )
   }
@@ -76,9 +101,13 @@ const LandingPage = () => {
         top={'top-40'}
         handleReset={handleReset}
         formData={[
-          { label: 'Doctor Id', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'Password', className: 'col-span-2 flex flex-col', type: 'password' },
+          { label: 'Doctor Id', name: 'doctorId', className: 'col-span-2 flex flex-col', type: 'text'},
+          { label: 'Password', name: 'password', className: 'col-span-2 flex flex-col', type: 'password' },
         ]}
+        validationSchema={ object({
+          doctorId: string().required("Doctor Id is required"),
+          password: string().min(8, "password should contain more than 8 characters").required('password is required')
+        }) }
       />
     )
   }

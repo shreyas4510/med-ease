@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, HttpCode, Post, Request, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpCode, Post, Request, UseGuards } from '@nestjs/common';
 import { HospitalService } from './hospital.service';
 import { DepartmentDto, HospitalDto, LoginDto, TokenDto } from "./hospital.dto";
 import * as CryptoJS from 'crypto-js';
@@ -52,6 +52,17 @@ export class HospitalController {
                 ...req.user,
                 ...body
             });
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    @HttpCode(200)
+    @Get()
+    async findHospitals( @Body() body: Record<string, string> ): Promise<Array<string>> {
+        try {
+            const data = await this.hospitalService.findHospitals(body.key);
+            return data;
         } catch (error) {
             throw error;
         }

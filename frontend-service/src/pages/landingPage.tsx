@@ -52,11 +52,19 @@ const LandingPage = () => {
         top={'top-12'}
         handleReset={handleReset}
         formData={[
+<<<<<<< HEAD
           { label: 'Name', name: 'name', className: 'col-sp8an-2 flex flex-col', type: 'text' },
           { label: 'Customer Care Number', name: 'cutmCareNum', className: 'col-span-2 flex flex-col', type: 'text' },
           { label: 'City', name: 'city', className: 'col-span-2 flex flex-col', type: 'text' },
           { label: 'State', name: 'state', className: 'col-span-2 flex flex-col', type: 'text' },
           { label: 'Zipcode', name: 'zipcode', className: 'col-span-2 flex flex-col', type: 'text' },
+=======
+          { label: 'Name', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'Customer Care Number', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'State', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'City', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'Zipcode', className: 'col-span-2 flex flex-col', type: 'text' },
+>>>>>>> f155c6a9a716a51ad082c2e39da3b003db7c36f9
         ]}
         validationSchema={ object({
           name: string().required("name is required"),
@@ -138,7 +146,7 @@ const LandingPage = () => {
             <h1 className="font-bold text-4xl md:text-7xl mt-4 max-w-md mx-auto text-white font-poppins">Made Easy</h1>
           </div>
           <div className="flex justify-center">
-            <img alt="" src={Doctor} />
+            <img alt="" src={Doctor} draggable="false" />
           </div>
         </div>
         <Button

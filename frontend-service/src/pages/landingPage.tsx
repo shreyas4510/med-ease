@@ -188,3 +188,8 @@ const LandingPage = () => {
 }
 
 export default LandingPage;
+
+
+const tryFunc = () => {
+  console.log('try');
+}

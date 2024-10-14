@@ -3,12 +3,16 @@ import { useEffect, useState } from "react";
 import { TProps } from "./types/authView";
 import Input from "./input";
 import Button from "./button";
+import { ErrorMessage, Form, Formik } from "formik";
 
 const AuthView = ({
     title,
     top,
     formData,
-    handleReset
+    handleReset,
+    validationSchema,
+    initialValues,
+    handleSubmit
 }: TProps) => {
     const [isVisible, setIsVisible] = useState(false);
 
@@ -45,20 +49,27 @@ const AuthView = ({
                 }
                 sx={{ maxWidth: '40rem' }}
             >
-                <CardContent className="grid grid-cols-2 gap-4">
-                    {
-                        formData.map(({
-                            label,
-                            type,
-                            className
-                        }) => (
-                            <div className={className}>
-                                <label className="text-start text-blue-500 font-medium">{label}</label>
-                                <Input type={type} placeholder={label} />
-                            </div>
-                        ))
-                    }
-                    <Button className="mx-auto col-span-2 text-white bg-blue-500">Submit</Button>
+                <CardContent>
+                    <Formik
+                        initialValues={initialValues}
+                        validationSchema={validationSchema}
+                        onSubmit={handleSubmit}
+                    >
+                        {() => (
+                            <Form className="grid grid-cols-2 gap-4" >
+                                {
+                                    formData.map(({ label, name, type, className }, index) => (
+                                        <div className={className} key={`auth-form-${label}-${index}`}>
+                                            <label className="text-start text-blue-500 font-medium">{label}</label>
+                                            <Input name={name} type={type} placeholder={label} />
+                                            <ErrorMessage name={name} component="div" className="text-start text-red-500 text-xs" />
+                                        </div>
+                                    ))
+                                }
+                                <Button className="mx-auto col-span-2 text-white bg-blue-500">Submit</Button>
+                            </Form>
+                        )}
+                    </Formik>
                 </CardContent>
             </Card>
         </div>

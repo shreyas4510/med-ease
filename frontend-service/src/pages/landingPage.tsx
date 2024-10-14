@@ -3,6 +3,7 @@ import Doctor from "../assets/images/doctor.png";
 import { useContext } from "../context";
 import { authView } from "../context/types";
 import AuthView from "../components/authView";
+import { registerHospitalSchema, registerHospitalValues } from "../validations/registerHospital.validation";
 
 const LandingPage = () => {
   const { state, setAuth } = useContext();
@@ -12,56 +13,85 @@ const LandingPage = () => {
   }
 
   const BookAppointment = () => {
+
+    const handleSubmit = () => {
+      // TODO: api integration for book appointment
+    }
+
     return (
       <AuthView
         key={`book-appointment-key`}
         title="Book Appointment"
         top={'top-8'}
         handleReset={handleReset}
+        // TODO: add validation schema and initial values for book appointment
+        initialValues={{}}
+        validationSchema={{} as any}
+        handleSubmit={handleSubmit}
         formData={[
-          { label: 'Name', className: 'col-span-1 flex flex-col', type: 'text' },
-          { label: 'Age', className: 'col-span-1 flex flex-col', type: 'number' },
-          { label: 'Contact', className: 'col-span-1 flex flex-col', type: 'text' },
-          { label: 'City', className: 'col-span-1 flex flex-col', type: 'text' },
-          { label: 'Speciality', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'Hospital', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'Doctor', className: 'col-span-1 flex flex-col', type: 'text' },
-          { label: 'Appointment Date', className: 'col-span-1 flex flex-col', type: 'text' }
+          { label: 'Name', name: 'name', className: 'col-span-1 flex flex-col', type: 'text' },
+          { label: 'Age', name: 'age', className: 'col-span-1 flex flex-col', type: 'number' },
+          { label: 'Contact', name: 'contact', className: 'col-span-1 flex flex-col', type: 'text' },
+          { label: 'City', name: 'city', className: 'col-span-1 flex flex-col', type: 'text' },
+          { label: 'Speciality', name: 'speciality', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'Hospital', name: 'hospital', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'Doctor', name: 'doctor', className: 'col-span-1 flex flex-col', type: 'text' },
+          { label: 'Appointment Date', name: 'appointmentDate', className: 'col-span-1 flex flex-col', type: 'text' }
         ]}
       />
     )
   }
 
   const RegisterHospital = () => {
+
+    const handleSubmit = () => {
+      // TODO: api integration for register hospital
+    }
+
     return (
       <AuthView
         key={`register-hospital-key`}
         title="Register Hospital"
         top={'top-12'}
         handleReset={handleReset}
+        validationSchema={registerHospitalSchema}
+        handleSubmit={handleSubmit}
+        initialValues={registerHospitalValues}
         formData={[
-          { label: 'Name', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'Customer Care Number', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'State', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'City', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'Zipcode', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'Name', name: 'name', className: 'col-span-1 flex flex-col', type: 'text' },
+          { label: 'Email', name: 'email', className: 'col-span-1 flex flex-col', type: 'email' },
+          { label: 'Password', name: 'password', className: 'col-span-1 flex flex-col', type: 'password' },
+          { label: 'Confirm Password', name: 'cpassword', className: 'col-span-1 flex flex-col', type: 'password' },
+          { label: 'Customer Care Number', name: 'customerCareNumber', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'State', name: 'state', className: 'col-span-1 flex flex-col', type: 'text' },
+          { label: 'City', name: 'city', className: 'col-span-1 flex flex-col', type: 'text' },
+          { label: 'Zipcode', name: 'zipCode', className: 'col-span-2 flex flex-col', type: 'text' },
         ]}
       />
     )
   }
 
   const RegisterDoctor = () => {
+
+    const handleSubmit = () => {
+      // TODO: do api integration for register doctor
+    }
+
     return (
       <AuthView
         key={`register-doctor-key`}
         title="Register Doctor"
         top={'top-8'}
         handleReset={handleReset}
+        // TODO: update initialValues and validationSchema as required
+        initialValues={{}}
+        validationSchema={{} as any}
+        handleSubmit={handleSubmit}
         formData={[
-          { label: 'Name', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'Experience', className: 'col-span-2 flex flex-col', type: 'number' },
-          { label: 'Speciality', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'Hospital', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'Name', name: 'name', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'Experience', name: 'experience', className: 'col-span-2 flex flex-col', type: 'number' },
+          { label: 'Speciality', name: 'speciality', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'Hospital', name: 'hospital', className: 'col-span-2 flex flex-col', type: 'text' },
 
         ]}
       />
@@ -69,15 +99,24 @@ const LandingPage = () => {
   }
 
   const Login = () => {
+
+    const handleSubmit = () => {
+      // TODO: do api integration using axios and context api for logging in hospital
+    }
+
     return (
       <AuthView
         key={`sign-in-key`}
         title="Sign In"
         top={'top-40'}
         handleReset={handleReset}
+        // TODO: update initialValues and validationSchema as required
+        initialValues={{}}
+        validationSchema={{} as any}
+        handleSubmit={handleSubmit}
         formData={[
-          { label: 'Doctor Id', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'Password', className: 'col-span-2 flex flex-col', type: 'password' },
+          { label: 'Doctor Id', name: 'doctorId', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'Password', name: 'password', className: 'col-span-2 flex flex-col', type: 'password' },
         ]}
       />
     )

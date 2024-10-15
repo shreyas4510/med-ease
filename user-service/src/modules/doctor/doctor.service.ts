@@ -4,12 +4,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Doctor } from './doctor.schema';
 import { Model } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
+import { KafkaService } from '../kafka/kafka.service';
 
 @Injectable()
 export class DoctorService {
     constructor(
         @InjectModel(Doctor.name) private doctorModel: Model<Doctor>,
-        private jwtService: JwtService
+        private jwtService: JwtService,
+        private kafkaService: KafkaService
     ) {}
 
     async save( payload: DoctorDto ): Promise<Doctor> {
@@ -38,5 +40,13 @@ export class DoctorService {
         } catch (error) {
             throw error;
         }
+    }
+
+    async messageSetup(): Promise<void> {
+        this.kafkaService.sendMessage(
+            process.env.KAFKA_USER_TOPIC,
+            JSON.stringify({ data: 'testing data' })
+        )
+        return;
     }
 }

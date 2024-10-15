@@ -32,7 +32,7 @@ export class DoctorController {
     }
 
     @HttpCode(200)
-    @Post()
+    @Post('login')
     async login( @Body() body: LoginDto ): Promise<TokenDto> {
         try {
             const data = await this.doctorService.login(body);

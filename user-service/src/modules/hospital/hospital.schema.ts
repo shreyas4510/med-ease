@@ -3,7 +3,7 @@ import { HydratedDocument } from 'mongoose';
 
 export type HospitalDocument = HydratedDocument<Hospital>;
 
-@Schema()
+@Schema({ timestamps: true })
 export class Hospital {
   @Prop()
   name: string;
@@ -28,6 +28,12 @@ export class Hospital {
 
   @Prop([String])
   departments: string[];
+
+  @Prop()
+  createdAt?: Date
+
+  @Prop()
+  updatedAt?: Date
 }
 
 export const HospitalSchema = SchemaFactory.createForClass(Hospital);

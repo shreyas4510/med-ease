@@ -41,12 +41,4 @@ export class DoctorService {
             throw error;
         }
     }
-
-    async messageSetup(): Promise<void> {
-        this.kafkaService.sendMessage(
-            process.env.KAFKA_USER_TOPIC,
-            JSON.stringify({ data: 'testing data' })
-        )
-        return;
-    }
 }

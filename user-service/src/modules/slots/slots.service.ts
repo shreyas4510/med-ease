@@ -23,7 +23,30 @@ export class SlotsService {
             return {
                 "status": "processing",
                 "message": "Slots are currently being prepared. Please wait."
-            };                
+            };
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async remove( payload, user ): Promise<Record<string, string>> {
+        try {
+            await this.kafkaService.sendMessage(
+                process.env.KAFKA_USER_TOPIC,
+                JSON.stringify({
+                    operation: 'REMOVE',
+                    data: {
+                        ...payload,
+                        doctor: user._id,
+                        hospital: user.hospital
+                    }
+                })
+            )
+    
+            return {
+                "status": "processing",
+                "message": "Slots are currently being removed. Please wait."
+            };
         } catch (error) {
             throw error;
         }

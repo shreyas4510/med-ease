@@ -3,7 +3,7 @@ import { HospitalService } from './hospital.service';
 import { DepartmentDto, HospitalDto, LoginDto, TokenDto } from "./hospital.dto";
 import * as CryptoJS from 'crypto-js';
 import { passwordRegex } from 'src/utils/constants';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthGuard } from '../../auth/auth.guard';
 
 @Controller('hospital')
 export class HospitalController {

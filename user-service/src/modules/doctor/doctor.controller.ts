@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { DoctorDto, LoginDto, TokenDto } from './doctor.dto';
 import { DoctorService } from './doctor.service';
 import * as CryptoJS from 'crypto-js';
@@ -37,17 +37,6 @@ export class DoctorController {
         try {
             const data = await this.doctorService.login(body);
             return data;
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    @HttpCode(200)
-    @Get()
-    async messageSetup(): Promise<string> {
-        try {
-            await this.doctorService.messageSetup();
-            return "data";
         } catch (error) {
             throw error;
         }

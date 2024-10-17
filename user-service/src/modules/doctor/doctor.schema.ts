@@ -4,7 +4,7 @@ import { Hospital } from '../hospital/hospital.schema';
 
 export type DoctorDocument = HydratedDocument<Doctor>;
 
-@Schema()
+@Schema({ timestamps: true })
 export class Doctor {
   @Prop()
   name: string;
@@ -23,6 +23,12 @@ export class Doctor {
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: Hospital.name })
   hospital: Hospital;
+
+  @Prop()
+  createdAt?: Date
+
+  @Prop()
+  updatedAt?: Date
 }
 
 export const DoctorSchema = SchemaFactory.createForClass(Doctor);

@@ -42,3 +42,27 @@ export class SlotsDto {
     @IsString()
     hospital: string;
 }
+
+export class RemoveSlotsDto {
+    @IsArray()
+    @IsEnum(WeekDays, { each: true })
+    weekDays: WeekDays[];
+
+    @IsNotEmpty()
+    @Matches(/^\d{2}-\d{2}-\d{4}$/, {
+        message: 'endDate must be in format DD-MM-YYYY',
+    })
+    startDate: string;
+
+    @IsNotEmpty()
+    @Matches(/^\d{2}-\d{2}-\d{4}$/, {
+        message: 'endDate must be in format DD-MM-YYYY',
+    })
+    endDate: string;
+
+    @IsString()
+    doctor: string;
+
+    @IsString()
+    hospital: string;
+}

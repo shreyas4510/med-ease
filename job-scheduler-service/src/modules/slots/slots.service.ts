@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SlotsDto, WeekDays } from './slots.dto';
+import { RemoveSlotsDto, SlotsDto, WeekDays } from './slots.dto';
 import * as moment from 'moment';
 import { InjectModel } from '@nestjs/mongoose';
 import { Slots } from './slots.schema';
@@ -42,8 +42,8 @@ export class SlotsService {
 
     async saveSlots(finalSlots) {
         try {
-            const slots = [ ...finalSlots ];
-            await this.slotsModal.insertMany(slots)   
+            const slots = [...finalSlots];
+            await this.slotsModal.insertMany(slots)
         } catch (error) {
             if (error.code === 11000) {
                 // TODO: Notify frontend using Socket on duplicate records
@@ -95,6 +95,36 @@ export class SlotsService {
                 this.saveSlots(finalSlots);
                 finalSlots = [];
             }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async removeSlots(data: RemoveSlotsDto): Promise<void> {
+        try {
+            // Break Day wise slots
+            let { startDate, endDate, weekDays } = data;
+            let curDate = moment(startDate, 'DD-MM-YYYY');
+            const dates = [];
+            while (curDate.isSameOrBefore( moment(endDate, 'DD-MM-YYYY') )) {
+                const weekDay = curDate.format('ddd') as WeekDays;
+                if (!weekDays.includes(weekDay)) {
+                    curDate = curDate.add(1, 'day');
+                    continue;
+                }
+                dates.push( curDate.format('DD-MM-YYYY') );
+                curDate = curDate.add(1, 'day');
+            }
+
+            await this.slotsModal.deleteMany({
+                date: {
+                    $in: dates
+                },
+                hospitalId: data.hospital,
+                doctorId: data.doctor
+            });
+            
+            // TODO: Notify Frontend and slots deletion
         } catch (error) {
             throw error;
         }

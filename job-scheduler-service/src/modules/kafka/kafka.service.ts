@@ -24,6 +24,9 @@ export class KafkaService {
                 if (payload.operation === 'CREATE') {
                     this.slotService.createSlots(payload.data);
                 }
+                if (payload.operation === 'REMOVE') {
+                    this.slotService.removeSlots(payload.data);
+                }
                 break;
             default:
                 break;

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { RemoveSlotsDto, SlotsDto, WeekDays } from './slots.dto';
+import { SlotsDto, CreateSlotsDto, WeekDays } from './slots.dto';
 import * as moment from 'moment';
 import { InjectModel } from '@nestjs/mongoose';
-import { Slots } from './slots.schema';
+import { Slots, SlotsDocument } from './slots.schema';
 import { Model } from 'mongoose';
 
 @Injectable()
@@ -13,31 +13,39 @@ export class SlotsService {
 
 
     getDaySlots(dayStartTime, dayEndTime, daySlotsList) {
-        while (
-            moment(dayStartTime, 'hh:mm A').isBefore(moment(dayEndTime, 'hh:mm A'))
-        ) {
-            const endTime = moment(dayStartTime, 'hh:mm A')
-                .add(15, 'minute')
-                .format('hh:mm A');
-            daySlotsList.push({
-                startTime: dayStartTime,
-                endTime
-            })
-            dayStartTime = endTime;
+        try {
+            while (
+                moment(dayStartTime, 'hh:mm A').isBefore(moment(dayEndTime, 'hh:mm A'))
+            ) {
+                const endTime = moment(dayStartTime, 'hh:mm A')
+                    .add(15, 'minute')
+                    .format('hh:mm A');
+                daySlotsList.push({
+                    startTime: dayStartTime,
+                    endTime
+                })
+                dayStartTime = endTime;
+            }   
+        } catch (error) {
+            throw error;
         }
     }
 
     getRoundToNextQuarterHour() {
-        let now = moment();
-        let minutes = now.minutes();
-
-        let minutesToAdd = 15 - (minutes % 15);
-        if (minutesToAdd === 15) {
-            minutesToAdd = 0;
+        try {
+            let now = moment();
+            let minutes = now.minutes();
+    
+            let minutesToAdd = 15 - (minutes % 15);
+            if (minutesToAdd === 15) {
+                minutesToAdd = 0;
+            }
+    
+            now.add(minutesToAdd, 'minutes');
+            return now.format('HH:mm');    
+        } catch (error) {
+            throw error;
         }
-
-        now.add(minutesToAdd, 'minutes');
-        return now.format('HH:mm');
     }
 
     async saveSlots(finalSlots) {
@@ -54,7 +62,7 @@ export class SlotsService {
         }
     }
 
-    async createSlots(data: SlotsDto): Promise<void> {
+    async createSlots(data: CreateSlotsDto): Promise<void> {
         try {
             // Break Day wise slots
             let { dayStartTime, dayEndTime } = data;
@@ -100,9 +108,8 @@ export class SlotsService {
         }
     }
 
-    async removeSlots(data: RemoveSlotsDto): Promise<void> {
+    async removeSlots(data: SlotsDto): Promise<void> {
         try {
-            // Break Day wise slots
             let { startDate, endDate, weekDays } = data;
             let curDate = moment(startDate, 'DD-MM-YYYY');
             const dates = [];
@@ -125,6 +132,31 @@ export class SlotsService {
             });
             
             // TODO: Notify Frontend and slots deletion
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async getSlots(data: Partial<SlotsDto>): Promise<Array<SlotsDocument>> {
+        try {
+            let { startDate, endDate } = data;
+
+            const dates = []
+            let curDate = moment(startDate, 'DD-MM-YYYY');
+            while (curDate.isSameOrBefore( moment(endDate, 'DD-MM-YYYY') )) {
+                dates.push( curDate.format('DD-MM-YYYY') );
+                curDate = curDate.add(1, 'day');
+            }
+
+            const res = await this.slotsModal.find({
+                date: {
+                    $in: dates 
+                },
+                hospitalId: data.hospital,
+                doctorId: data.doctor
+            });
+            
+            return res;
         } catch (error) {
             throw error;
         }

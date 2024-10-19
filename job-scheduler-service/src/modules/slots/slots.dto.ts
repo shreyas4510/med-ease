@@ -11,7 +11,7 @@ export enum WeekDays {
     Sun = 'Sun',
 }
 
-export class SlotsDto {
+export class CreateSlotsDto {
     @IsArray()
     @IsEnum(WeekDays, { each: true })
     weekDays: WeekDays[];
@@ -43,7 +43,7 @@ export class SlotsDto {
     hospital: string;
 }
 
-export class RemoveSlotsDto {
+export class SlotsDto {
     @IsArray()
     @IsEnum(WeekDays, { each: true })
     weekDays: WeekDays[];

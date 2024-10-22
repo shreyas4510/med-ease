@@ -4,13 +4,38 @@ import { useContext } from "../context";
 import { authView } from "../context/types";
 import AuthView from "../components/authView";
 import { registerHospitalSchema, registerHospitalValues } from "../validations/registerHospital.validation";
+import * as CryptoJs from "crypto-js";
+import api from "../api/apiConfig";
+import toast from "react-hot-toast";
+import { registerDoctorSchema, registerDoctorValues } from "../validations/registerDoctor.validation";
+import { useEffect } from "react";
 
 const LandingPage = () => {
-  const { state, setAuth } = useContext();
+  const { state, setAuth, setHospital } = useContext();
 
   const handleReset = () => {
     setAuth((prev) => ({ ...prev, view: authView.landingPage }))
   }
+
+  const onHospitalSearch = async (search: string = '') => {
+    const url = `${process.env.REACT_APP_BASE_URL}/hospital?search=${search}`
+    await api.get(url).then(
+      res => {
+        setHospital((prev) => ({
+          ...prev,
+          list: res.data.map((obj: Record<string, string>) => ({ value: obj.id, label: obj.name }))
+        }))
+      }
+    ).catch(
+      err => {
+        toast.error('Oops! Failed to retrive hospital. Please refresh and try again.')
+      }
+    );
+  }
+
+  useEffect(() => {
+    onHospitalSearch();
+  }, [])
 
   const BookAppointment = () => {
 
@@ -43,9 +68,27 @@ const LandingPage = () => {
   }
 
   const RegisterHospital = () => {
+    const handleSubmit = async (values: Record<string, string>) => {
+      const encrypted = CryptoJs.AES.encrypt(
+        values.password,
+        process.env.REACT_APP_CRYPTO_SECRET_KEY as string
+      ).toString();
 
-    const handleSubmit = () => {
-      // TODO: api integration for register hospital
+      const data = { ...values };
+      delete data.cpassword;
+      data.password = encrypted;
+
+      const url = `${process.env.REACT_APP_BASE_URL}/hospital/register`
+      await api.post(url, data).then(
+        res => {
+          toast.success('Hospital resgistered successfully !');
+          setAuth((prev) => ({ ...prev, view: authView.login }));
+        }
+      ).catch(
+        err => {
+          toast.error('Oops! Failed to register hospital. Please try again.')
+        }
+      );
     }
 
     return (
@@ -72,9 +115,27 @@ const LandingPage = () => {
   }
 
   const RegisterDoctor = () => {
+    const handleSubmit = async (values: Record<string, string>) => {
+      const encrypted = CryptoJs.AES.encrypt(
+        values.password,
+        process.env.REACT_APP_CRYPTO_SECRET_KEY as string
+      ).toString();
 
-    const handleSubmit = () => {
-      // TODO: do api integration for register doctor
+      const data = { ...values };
+      delete data.cpassword;
+      data.password = encrypted;
+
+      const url = `${process.env.REACT_APP_BASE_URL}/doctor`
+      await api.post(url, data).then(
+        res => {
+          setAuth((prev) => ({ ...prev, view: authView.login }));
+          toast.success('Doctor onboarded successfully !')
+        }
+      ).catch(
+        err => {
+          toast.error('Oops! Failed to register doctor. Please try again.')
+        }
+      );
     }
 
     return (
@@ -83,16 +144,25 @@ const LandingPage = () => {
         title="Register Doctor"
         top={'top-8'}
         handleReset={handleReset}
-        // TODO: update initialValues and validationSchema as required
-        initialValues={{}}
-        validationSchema={{} as any}
+        validationSchema={registerDoctorSchema}
+        initialValues={registerDoctorValues}
         handleSubmit={handleSubmit}
         formData={[
-          { label: 'Name', name: 'name', className: 'col-span-2 flex flex-col', type: 'text' },
+          { label: 'Name', name: 'name', className: 'col-span-1 flex flex-col', type: 'text' },
+          { label: 'Email', name: 'email', className: 'col-span-1 flex flex-col', type: 'email' },
+          { label: 'Password', name: 'password', className: 'col-span-1 flex flex-col', type: 'password' },
+          { label: 'Confirm Password', name: 'cpassword', className: 'col-span-1 flex flex-col', type: 'password' },
+          {
+            label: 'Hospital',
+            name: 'hospital',
+            className: 'col-span-2 flex flex-col',
+            type: 'select',
+            isSearchable: true,
+            options: state.hospital.list,
+            onSearch: onHospitalSearch
+          },
           { label: 'Experience', name: 'experience', className: 'col-span-2 flex flex-col', type: 'number' },
           { label: 'Speciality', name: 'speciality', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'Hospital', name: 'hospital', className: 'col-span-2 flex flex-col', type: 'text' },
-
         ]}
       />
     )

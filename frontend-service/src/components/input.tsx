@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Input as BaseInput, InputProps } from '@mui/base/Input';
+import { InputProps } from '@mui/base/Input';
 import clsx from 'clsx';
 import { Field } from 'formik';
 

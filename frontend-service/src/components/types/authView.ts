@@ -1,9 +1,15 @@
 import * as Yup from 'yup';
-interface formDataType {
+export interface formDataType {
     label: string;
     name: string;
     type: string;
     className: string;
+    isSearchable?: boolean;
+    options?: Array<{
+        value: string;
+        label: string;
+    }>;
+    onSearch?: (search: string) => void
 }
 
 export interface TProps {
@@ -11,7 +17,7 @@ export interface TProps {
     top: string;
     formData: formDataType[];
     handleReset: () => void;
-    handleSubmit: () => void;
+    handleSubmit: ( values: Record<string, string> ) => void;
     validationSchema: Yup.Schema;
     initialValues: Record<string, string>;
 }

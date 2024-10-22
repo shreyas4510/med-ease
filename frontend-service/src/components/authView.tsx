@@ -1,9 +1,10 @@
 import { Card, CardContent } from "@mui/material";
 import { useEffect, useState } from "react";
-import { TProps } from "./types/authView";
+import { formDataType, TProps } from "./types/authView";
 import Input from "./input";
 import Button from "./button";
 import { ErrorMessage, Form, Formik } from "formik";
+import CustomSelect from "./select";
 
 const AuthView = ({
     title,
@@ -32,6 +33,25 @@ const AuthView = ({
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    const InputView = (
+        obj: formDataType,
+        setFieldValue: ( name: string, option: string ) => void
+    ) => {
+        switch (obj.type) {
+            case 'select':
+                return (
+                    <CustomSelect
+                        name={obj.name}
+                        options={obj.options as []}
+                        setFieldValue={setFieldValue}
+                        onSearch={obj.onSearch}
+                    />
+                )
+            default:
+                return <Input name={obj.name} type={obj.type} placeholder={obj.label} />
+        }
+    }
+
     return (
         <div className="relative h-full">
             <div className="bg-custom-gradient h-custom-25 absolute right-0 left-0 top-0">
@@ -55,18 +75,22 @@ const AuthView = ({
                         validationSchema={validationSchema}
                         onSubmit={handleSubmit}
                     >
-                        {() => (
+                        {({ setFieldValue, isSubmitting, dirty, isValid }) => (
                             <Form className="grid grid-cols-2 gap-4" >
                                 {
-                                    formData.map(({ label, name, type, className }, index) => (
-                                        <div className={className} key={`auth-form-${label}-${index}`}>
-                                            <label className="text-start text-blue-500 font-medium">{label}</label>
-                                            <Input name={name} type={type} placeholder={label} />
-                                            <ErrorMessage name={name} component="div" className="text-start text-red-500 text-xs" />
+                                    formData.map((item, index) => (
+                                        <div className={item.className} key={`auth-form-${item.label}-${index}`}>
+                                            <label className="text-start text-blue-500 font-medium">{item.label}</label>
+                                            {InputView(item, setFieldValue)}
+                                            <ErrorMessage name={item.name} component="div" className="text-start text-red-500 text-xs" />
                                         </div>
                                     ))
                                 }
-                                <Button className="mx-auto col-span-2 text-white bg-blue-500">Submit</Button>
+                                <Button
+                                    disabled={ isSubmitting || !isValid || !dirty }
+                                    type="submit"
+                                    className="mx-auto col-span-2 text-white bg-blue-500"
+                                >Submit</Button>
                             </Form>
                         )}
                     </Formik>

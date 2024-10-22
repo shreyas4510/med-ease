@@ -31,7 +31,7 @@ api.interceptors.response.use(
   (error: AxiosError): Promise<AxiosError> => {
     if (error.response && error.response.status === 401) {
       localStorage.clear();
-      location.reload();
+      window.location.reload();
     }
     return Promise.reject(error); 
   }

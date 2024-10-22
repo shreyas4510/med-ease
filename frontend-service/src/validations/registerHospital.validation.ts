@@ -7,7 +7,8 @@ export const registerHospitalValues = {
     city: '',
     zipCode: '',
     email: '',
-    password: ''
+    password: '',
+    cpassword: ''
 }
 
 export const registerHospitalSchema: yup.Schema = yup.object().shape({

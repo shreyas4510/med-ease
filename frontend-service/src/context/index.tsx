@@ -1,16 +1,18 @@
 import React, { createContext, useContext, useState } from 'react';
-import { authStateType, authView, contextType, providerProps } from './types';
+import { authStateType, authView, contextType, hospitalStateType, providerProps } from './types';
 
 const Context = createContext<contextType | undefined>(undefined);
 
 const Provider: React.FC<providerProps> = ({ children }) => {
     const [auth, setAuth] = useState<authStateType>({ view: authView.landingPage });
-    const state = { auth };
+    const [hospital, setHospital] = useState<hospitalStateType>({ data: {}, list: [] });
+    const state = { auth, hospital };
 
     return (
         <Context.Provider value={{
             state,
-            setAuth
+            setAuth,
+            setHospital
         }}>
             {children}
         </Context.Provider>

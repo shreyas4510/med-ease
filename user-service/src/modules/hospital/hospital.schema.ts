@@ -37,3 +37,8 @@ export class Hospital {
 }
 
 export const HospitalSchema = SchemaFactory.createForClass(Hospital);
+
+HospitalSchema.index({
+  email: 1,
+  customerCareNumber: 1
+}, { unique: true });

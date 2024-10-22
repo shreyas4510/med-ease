@@ -32,3 +32,7 @@ export class Doctor {
 }
 
 export const DoctorSchema = SchemaFactory.createForClass(Doctor);
+
+DoctorSchema.index({
+  email: 1
+}, { unique: true });

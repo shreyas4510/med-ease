@@ -8,21 +8,21 @@ import { AuthGuard } from '../../auth/auth.guard';
 @Controller('hospital')
 export class HospitalController {
     private readonly secretKey = process.env.CRYPTO_SECRET_KEY;
-    constructor(private readonly hospitalService: HospitalService) {}
+    constructor(private readonly hospitalService: HospitalService) { }
 
     @HttpCode(201)
     @Post('register')
-    async save( @Body() body: HospitalDto ): Promise<HospitalDto> {
+    async save(@Body() body: HospitalDto): Promise<HospitalDto> {
         try {
             const decryptedBytes = CryptoJS.AES.decrypt(body.password, this.secretKey);
             const decryptedPassword = decryptedBytes.toString(CryptoJS.enc.Utf8);
 
             if (!passwordRegex.test(decryptedPassword)) {
-              throw new BadRequestException('Password does not meet the required format');
+                throw new BadRequestException('Password does not meet the required format');
             }
-        
+
             const data = await this.hospitalService.save(body);
-            return new HospitalDto(data);   
+            return new HospitalDto(data);
         } catch (error) {
             throw error;
         }
@@ -30,9 +30,15 @@ export class HospitalController {
 
     @HttpCode(200)
     @Post('login')
-    async login( @Body() body: LoginDto ): Promise<TokenDto> {
+    async login(@Body() body: LoginDto): Promise<TokenDto> {
         try {
-            const data = await this.hospitalService.login(body);
+            const decryptedBytes = CryptoJS.AES.decrypt(body.password, this.secretKey);
+            const decryptedPassword = decryptedBytes.toString(CryptoJS.enc.Utf8);
+
+            if (!passwordRegex.test(decryptedPassword)) {
+                throw new BadRequestException('Invalid Password');
+            }
+            const data = await this.hospitalService.login(body, decryptedPassword);
             return data;
         } catch (error) {
             throw error;
@@ -59,7 +65,7 @@ export class HospitalController {
 
     @HttpCode(200)
     @Get()
-    async findHospitals( @Query() query: Record<string, string> ): Promise<Array<HospitalDetailsDto>> {
+    async findHospitals(@Query() query: Record<string, string>): Promise<Array<HospitalDetailsDto>> {
         try {
             const data = await this.hospitalService.findHospitals(query.search);
             return data;

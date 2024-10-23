@@ -35,7 +35,14 @@ export class DoctorController {
     @Post('login')
     async login( @Body() body: LoginDto ): Promise<TokenDto> {
         try {
-            const data = await this.doctorService.login(body);
+            const decryptedBytes = CryptoJS.AES.decrypt(body.password, this.secretKey);
+            const decryptedPassword = decryptedBytes.toString(CryptoJS.enc.Utf8);
+
+            if (!passwordRegex.test(decryptedPassword)) {
+              throw new BadRequestException('Invalid password');
+            }
+        
+            const data = await this.doctorService.login(body, decryptedPassword);
             return data;
         } catch (error) {
             throw error;

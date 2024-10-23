@@ -1,17 +1,18 @@
-import Button from "../components/button";
+import { useEffect } from "react";
+import toast from "react-hot-toast";
+import * as CryptoJs from "crypto-js";
+import api from "../api/apiConfig";
 import Doctor from "../assets/images/doctor.png";
 import { useContext } from "../context";
 import { authView } from "../context/types";
+import Button from "../components/button";
 import AuthView from "../components/authView";
 import { registerHospitalSchema, registerHospitalValues } from "../validations/registerHospital.validation";
-import * as CryptoJs from "crypto-js";
-import api from "../api/apiConfig";
-import toast from "react-hot-toast";
 import { registerDoctorSchema, registerDoctorValues } from "../validations/registerDoctor.validation";
-import { useEffect } from "react";
+import { loginSchema, loginValues } from "../validations/login.validations";
 
 const LandingPage = () => {
-  const { state, setAuth, setHospital } = useContext();
+  const { state, setAuth, setHospital, setLoginState } = useContext();
 
   const handleReset = () => {
     setAuth((prev) => ({ ...prev, view: authView.landingPage }))
@@ -21,10 +22,10 @@ const LandingPage = () => {
     const url = `${process.env.REACT_APP_BASE_URL}/hospital?search=${search}`
     await api.get(url).then(
       res => {
-        setHospital((prev) => ({
+        setHospital((prev) => ([
           ...prev,
-          list: res.data.map((obj: Record<string, string>) => ({ value: obj.id, label: obj.name }))
-        }))
+          ...res.data.map((obj: Record<string, string>) => ({ value: obj.id, label: obj.name }))
+        ]))
       }
     ).catch(
       err => {
@@ -158,7 +159,7 @@ const LandingPage = () => {
             className: 'col-span-2 flex flex-col',
             type: 'select',
             isSearchable: true,
-            options: state.hospital.list,
+            options: state.hospital,
             onSearch: onHospitalSearch
           },
           { label: 'Experience', name: 'experience', className: 'col-span-2 flex flex-col', type: 'number' },
@@ -170,25 +171,49 @@ const LandingPage = () => {
 
   const Login = () => {
 
-    const handleSubmit = () => {
-      // TODO: do api integration using axios and context api for logging in hospital
+    const handleSubmit = async (values: Record<string, string>) => {
+      let url = process.env.REACT_APP_BASE_URL as string;
+      const encrypted = CryptoJs.AES.encrypt(
+        values.password,
+        process.env.REACT_APP_CRYPTO_SECRET_KEY as string
+      ).toString();
+      url += state.loginState.toLowerCase() === 'hospital' ? '/hospital/login' : '/doctor/login';
+
+      await api.post(url, { ...values, password: encrypted }).then(
+        res => {
+          localStorage.setItem('token', res.data.token);
+          localStorage.setItem('type', state.loginState);
+          // TODO: Redirect to the expected page
+        }
+      ).catch(
+        err => {
+          toast.error('Oops! Failed to login. Please try again.')
+        }
+      );
+    }
+
+    const handleLoginState = ( value: string ) => {
+      setLoginState(value);
     }
 
     return (
-      <AuthView
-        key={`sign-in-key`}
-        title="Sign In"
-        top={'top-40'}
-        handleReset={handleReset}
-        // TODO: update initialValues and validationSchema as required
-        initialValues={{}}
-        validationSchema={{} as any}
-        handleSubmit={handleSubmit}
-        formData={[
-          { label: 'Doctor Id', name: 'doctorId', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'Password', name: 'password', className: 'col-span-2 flex flex-col', type: 'password' },
-        ]}
-      />
+      <>
+        <AuthView
+          key={`sign-in-key`}
+          title="Sign In"
+          top={'top-20'}
+          handleReset={handleReset}
+          initialValues={loginValues}
+          validationSchema={loginSchema}
+          handleSubmit={handleSubmit}
+          handleLoginState={handleLoginState}
+          loginState={state.loginState}
+          formData={[
+            { label: 'Email', name: 'email', className: 'col-span-2 flex flex-col', type: 'email' },
+            { label: 'Password', name: 'password', className: 'col-span-2 flex flex-col', type: 'password' },
+          ]}
+        />
+      </>
     )
   }
 

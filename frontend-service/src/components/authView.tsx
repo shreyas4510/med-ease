@@ -13,8 +13,10 @@ const AuthView = ({
     handleReset,
     validationSchema,
     initialValues,
-    handleSubmit
-}: TProps) => {
+    handleSubmit,
+    handleLoginState = () => {},
+    loginState
+}: TProps) => {    
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
@@ -35,7 +37,7 @@ const AuthView = ({
 
     const InputView = (
         obj: formDataType,
-        setFieldValue: ( name: string, option: string ) => void
+        setFieldValue: (name: string, option: string) => void
     ) => {
         switch (obj.type) {
             case 'select':
@@ -70,6 +72,20 @@ const AuthView = ({
                 sx={{ maxWidth: '40rem' }}
             >
                 <CardContent>
+                    {
+                        title.toLowerCase() === 'sign in' && (
+                            <div className="w-full flex mb-4 !shadow-custom">
+                                <div
+                                    className={`w-full ${ loginState === 'hospital' ? 'text-white bg-custom-gradient' : 'border border-secondary' } py-3 font-medium cursor-pointer`}
+                                    onClick={() => handleLoginState('hospital')}
+                                >Hospital</div>
+                                <div
+                                    className={`w-full ${ loginState === 'doctor' ? 'text-white bg-custom-gradient' : 'border border-secondary' } py-3 font-medium cursor-pointer`}
+                                    onClick={() => handleLoginState('doctor')}    
+                                >Doctor</div>
+                            </div>
+                        )
+                    }
                     <Formik
                         initialValues={initialValues}
                         validationSchema={validationSchema}
@@ -87,7 +103,7 @@ const AuthView = ({
                                     ))
                                 }
                                 <Button
-                                    disabled={ isSubmitting || !isValid || !dirty }
+                                    disabled={isSubmitting || !isValid || !dirty}
                                     type="submit"
                                     className="mx-auto col-span-2 text-white bg-blue-500"
                                 >Submit</Button>

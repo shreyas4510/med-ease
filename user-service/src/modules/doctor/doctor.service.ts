@@ -4,15 +4,17 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Doctor } from './doctor.schema';
 import { Model } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
-import { KafkaService } from '../kafka/kafka.service';
+import * as CryptoJS from 'crypto-js';
 
 @Injectable()
 export class DoctorService {
+    private secretKey: string;
     constructor(
         @InjectModel(Doctor.name) private doctorModel: Model<Doctor>,
-        private jwtService: JwtService,
-        private kafkaService: KafkaService
-    ) {}
+        private jwtService: JwtService
+    ) {
+        this.secretKey = process.env.CRYPTO_SECRET_KEY;
+    }
 
     async save( payload: DoctorDto ): Promise<Doctor> {
         try {
@@ -23,17 +25,22 @@ export class DoctorService {
         }
     }
 
-    async login( payload: LoginDto ): Promise<TokenDto> {
+    async login( payload: LoginDto, decryptedPassword: string ): Promise<TokenDto> {
         try {
             const doctor = await this.doctorModel.findOne({
-                email: payload.email,
-                password: payload.password
+                email: payload.email
             }).exec();
 
             if (!doctor) {
                 throw new NotFoundException(`Doctor with credentials not found`);
             }
             const data = doctor.toJSON();
+            const decryptedBytes = CryptoJS.AES.decrypt(data.password, this.secretKey);
+            const userPass = decryptedBytes.toString(CryptoJS.enc.Utf8);
+            if (userPass !== decryptedPassword) {
+                throw new NotFoundException(`Invalid Password`);                
+            }
+
             delete data.password;
             const token = await this.jwtService.signAsync(data);
             return { token };

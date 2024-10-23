@@ -4,13 +4,17 @@ import { Hospital } from './hospital.schema';
 import { Model } from 'mongoose';
 import { DepartmentDto, HospitalDetailsDto, HospitalDto, LoginDto, TokenDto } from './hospital.dto';
 import { JwtService } from '@nestjs/jwt';
+import * as CryptoJS from 'crypto-js';
 
 @Injectable()
 export class HospitalService {
+    private secretKey: string;
     constructor(
         @InjectModel(Hospital.name) private hospitalModel: Model<Hospital>,
         private jwtService: JwtService
-    ) { }
+    ) {
+        this.secretKey = process.env.CRYPTO_SECRET_KEY;
+    }
 
     async save(payload: HospitalDto): Promise<Hospital> {
         try {
@@ -21,18 +25,24 @@ export class HospitalService {
         }
     }
 
-    async login(payload: LoginDto): Promise<TokenDto> {
+    async login(payload: LoginDto, decryptedPassword: string): Promise<TokenDto> {
         try {
             let hospitalData = await this.hospitalModel.findOne({
-                    email: payload.email,
-                    password: payload.password
-                }).exec();
+                email: payload.email
+            }).exec();
+
             if (!hospitalData) {
                 throw new NotFoundException(`Hospital with credentials not found`);
             }
+            
+            const data = hospitalData.toJSON();            
+            const decryptedBytes = CryptoJS.AES.decrypt(data.password, this.secretKey);
+            const hospitalPass = decryptedBytes.toString(CryptoJS.enc.Utf8);
+            if (hospitalPass !== decryptedPassword) {
+                throw new NotFoundException(`Invalid Password`);                
+            }
 
-            const data = hospitalData.toJSON();
-            delete data.password;     
+            delete data.password;
             const token = await this.jwtService.signAsync(data);
             return { token };
         } catch (error) {
@@ -40,14 +50,14 @@ export class HospitalService {
         }
     }
 
-    async addDepartments( hospitalData: HospitalDto, { departments }: DepartmentDto ): Promise<void> {
+    async addDepartments(hospitalData: HospitalDto, { departments }: DepartmentDto): Promise<void> {
         try {
             const res = await this.hospitalModel.updateOne(
                 { _id: hospitalData._id },
                 { departments }
             )
 
-            if(!res.modifiedCount) {
+            if (!res.modifiedCount) {
                 throw new NotFoundException(`Hospital with ID ${hospitalData._id} not found`);
             }
             return;
@@ -56,7 +66,7 @@ export class HospitalService {
         }
     }
 
-    async findHospitals( search: string ): Promise<HospitalDetailsDto[]> {
+    async findHospitals(search: string): Promise<HospitalDetailsDto[]> {
         try {
             const searchTerm = new RegExp(search, 'i');
             const res = await this.hospitalModel

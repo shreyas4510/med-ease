@@ -20,4 +20,6 @@ export interface TProps {
     handleSubmit: ( values: Record<string, string> ) => void;
     validationSchema: Yup.Schema;
     initialValues: Record<string, string>;
+    handleLoginState?: ( values: string ) => void;
+    loginState?: string;
 }

@@ -8,6 +8,7 @@ module.exports = {
       colors: {
         'primary': '#2c67f2',
         'secondary': '#62cff4',
+        'light': '#DEEFF5'
       },
       fontFamily: {
         poppins: ['Poppins', 'sans-serif'],
@@ -16,7 +17,9 @@ module.exports = {
         start: 'start',
       },
       backgroundImage: {
-        'custom-gradient': 'linear-gradient(to right, #2c67f2, #62cff4)'
+        'custom-gradient': 'linear-gradient(to right, #2c67f2, #62cff4)',
+        'department-gradient': 'linear-gradient(to bottom right, #ffffff, #d4dfed)',
+        'close-btn': 'linear-gradient(to right, #000000, #444444)'
       },
       height: {
         'custom-25': '25rem'

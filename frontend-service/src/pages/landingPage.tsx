@@ -10,8 +10,11 @@ import AuthView from "../components/authView";
 import { registerHospitalSchema, registerHospitalValues } from "../validations/registerHospital.validation";
 import { registerDoctorSchema, registerDoctorValues } from "../validations/registerDoctor.validation";
 import { loginSchema, loginValues } from "../validations/login.validations";
+import { useNavigate } from "react-router-dom";
 
 const LandingPage = () => {
+
+  const navigate = useNavigate();
   const { state, setAuth, setHospital, setLoginState } = useContext();
 
   const handleReset = () => {
@@ -183,7 +186,7 @@ const LandingPage = () => {
         res => {
           localStorage.setItem('token', res.data.token);
           localStorage.setItem('type', state.loginState);
-          // TODO: Redirect to the expected page
+          navigate('/main');
         }
       ).catch(
         err => {

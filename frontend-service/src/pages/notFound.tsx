@@ -7,7 +7,7 @@ const NotFound = () => {
       <h1 className="text-3xl font-semibold mb-2">Page Not Found</h1>
       <p className="mb-4">Sorry, the page you are looking for does not exist.</p>
       <Link
-        to="/"
+        to={ localStorage.getItem('token') ? '/main' : '' }
         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
       >
         Go to Homepage

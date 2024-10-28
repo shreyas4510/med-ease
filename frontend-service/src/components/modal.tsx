@@ -14,7 +14,7 @@ const CustomModal = ({
         <Modal
             open={open}
             onClose={onClose}
-            className={className}
+            className={`mx-auto mt-16 border-0 ${className}`}
         >
             <div className="p-5 bg-white rounded">
                 <div className="text-start text-primary font-poppins text-3xl mb-5">{title}</div>

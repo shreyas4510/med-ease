@@ -89,7 +89,7 @@ const Departments = () => {
                 title='Add Department'
                 onClose={() => setAddDeptModal(false)}
                 onSuccess={handleAddDepartment}
-                className='w-1/3 mx-auto mt-16'
+                className='w-4/5 md:w-1/3'
             >
                 <div className='flex flex-col'>
                     <TextField
@@ -107,7 +107,7 @@ const Departments = () => {
                 title='Remove Department'
                 onClose={() => setRemoveDept('')}
                 onSuccess={handleRemoveDepartment}
-                className='w-1/3 mx-auto mt-16'
+                className='w-4/5 md:w-1/3'
             >
                 <div className='flex flex-col'>
                     <p>Are you sure you want to remove the <strong>department</strong> ?</p>

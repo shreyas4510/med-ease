@@ -1,7 +1,6 @@
 import React from 'react';
 import { AppBar, Toolbar, IconButton, Menu, MenuItem } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { useNavigate } from 'react-router-dom';
 
 const Navbar: React.FC = () => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -14,29 +13,10 @@ const Navbar: React.FC = () => {
         setAnchorEl(null);
     };
 
-    const navigate = useNavigate();
-    const handleOptionSelect = (option: string) => {
-        switch (option.toLowerCase()) {
-            case 'calender':
-                navigate('/main');
-                break;
-            case 'settings':
-                navigate('/settings');
-                break;
-            case 'logout':
-                localStorage.clear();
-                window.location.reload();
-                break;
-            default:
-                break;
-        }
-        handleMenuClose();
-    };
-
     return (
         <AppBar position="static">
             <Toolbar className="!bg-custom-gradient flex justify-between">
-                <div className="px-16 my-5 text-start font-poppins text-3xl text-white">
+                <div className="my-5 text-start font-poppins text-3xl text-white">
                     MedEase
                 </div>
                 <div>
@@ -56,18 +36,15 @@ const Navbar: React.FC = () => {
                             onExited: handleMenuClose,
                         }}
                     >
-                        {(
-                            localStorage.getItem('type') === 'hospital' ?
-                            [ 'Logout' ] :
-                            [ 'Calender', 'Settings', 'Logout' ]
-                        ).map((option) => (
-                                <MenuItem
-                                    key={option}
-                                    onClick={() => handleOptionSelect(option)}
-                                >
-                                    {option}
-                                </MenuItem>
-                            ))}
+                        <MenuItem
+                            key={'logout'}
+                            onClick={() => {
+                                localStorage.clear();
+                                window.location.reload();
+                            }}
+                        >
+                            Logout
+                        </MenuItem>
                     </Menu>
                 </div>
             </Toolbar>

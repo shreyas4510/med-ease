@@ -1,8 +1,17 @@
+import Calender from './calender';
 import Departments from './department';
 
 const Main = () => {
     return (
-        <Departments />
+        <>
+            {
+                localStorage.getItem('type') === 'hospital' ? (
+                    <Departments />
+                ) : (
+                    <Calender />
+                )
+            }
+        </>
     )
 };
 

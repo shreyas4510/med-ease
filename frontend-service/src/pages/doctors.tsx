@@ -11,7 +11,7 @@ import toast from "react-hot-toast";
 const Doctors = () => {
 
     const { state, setDoctors } = useContext();
-    const { doctors, addDoctorModal, doctorId, unmappedDoctors } = state.doctors;
+    const { doctors, addDoctorModal, doctorId, unmappedDoctors, removeDoctorModal } = state.doctors;
 
     const manageDoctors = async (action: string, doctorId: string) => {
         const res = await manageDoctorStatus(doctorId, action)
@@ -49,6 +49,7 @@ const Doctors = () => {
             doctors: data || [],
             addDoctorModal: false,
             doctorId: '',
+            removeDoctorModal: false,
             unmappedDoctors: (unmappedDoctorsData || []).map(
                 (item: Record<string, string>) => ({
                     label: item.email, value: item.id
@@ -102,7 +103,11 @@ const Doctors = () => {
                             <Button
                                 className="bg-red-500 text-white ms-auto"
                                 onClick={() => {
-                                    manageDoctors('offboard', doctor.id)
+                                    setDoctors((prev) => ({
+                                        ...prev,
+                                        doctorId: doctor.id,
+                                        removeDoctorModal: true
+                                    }))
                                 }}
                             >
                                 Remove
@@ -112,7 +117,6 @@ const Doctors = () => {
                 ))}
             </div>
 
-            {/* Add new department modal */}
             <CustomModal
                 key={'add-doctor-modal'}
                 open={addDoctorModal}
@@ -153,6 +157,23 @@ const Doctors = () => {
                             )
                         }
                     </Formik>
+                </div>
+            </CustomModal>
+
+            <CustomModal
+                key={'remove-doctor-modal'}
+                open={removeDoctorModal}
+                title='Remove Department'
+                onClose={() => setDoctors(prev => (
+                    { ...prev, doctorId: '', removeDoctorModal: false }
+                ))}
+                onSuccess={() => {
+                    manageDoctors('offboard', doctorId)
+                }}
+                className='w-4/5 md:w-1/3'
+            >
+                <div className='flex flex-col'>
+                    <p>Are you sure you want to remove the <strong>doctor</strong> ?</p>
                 </div>
             </CustomModal>
         </div>

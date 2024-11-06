@@ -64,6 +64,18 @@ export class HospitalController {
     }
 
     @HttpCode(200)
+    @UseGuards(AuthGuard)
+    @Get('/details')
+    async getHospital( @Request() req ): Promise<HospitalDto> {
+        try {
+            const data = await this.hospitalService.getHospitalDetails(req.user._id);
+            return new HospitalDto(data);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    @HttpCode(200)
     @Get()
     async findHospitals(@Query() query: Record<string, string>): Promise<Array<HospitalDetailsDto>> {
         try {

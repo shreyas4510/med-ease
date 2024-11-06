@@ -81,4 +81,13 @@ export class HospitalService {
             throw error;
         }
     }
+
+    async getHospitalDetails(id: string): Promise<Hospital> {
+        try {
+            const res = await this.hospitalModel.findOne({ _id: id });
+            return res;
+        } catch (error) {
+            throw error;
+        }
+    }
 }

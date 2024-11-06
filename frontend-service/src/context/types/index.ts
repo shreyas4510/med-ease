@@ -38,6 +38,7 @@ interface doctorDetails {
 export interface doctorsStateType {
     doctors: doctorDetails[];
     addDoctorModal: boolean;
+    removeDoctorModal: boolean;
     doctorId: string;
     unmappedDoctors: Array<{
         label: string;

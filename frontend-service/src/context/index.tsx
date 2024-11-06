@@ -16,6 +16,7 @@ const Provider: React.FC<providerProps> = ({ children }) => {
     const [doctors, setDoctors] = useState<doctorsStateType>({
         doctors: [],
         addDoctorModal: false,
+        removeDoctorModal: false,
         doctorId: '',
         unmappedDoctors: []
     });

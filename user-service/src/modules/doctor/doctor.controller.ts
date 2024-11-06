@@ -70,7 +70,6 @@ export class DoctorController {
                 message: 'Success'
             };
         } catch (error) {
-            console.log(error);
             throw error;
         }
     }

@@ -1,68 +1,79 @@
 import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
 import Button from "../components/button";
 import { useEffect } from "react";
-
-const doctors = [
-    {
-        "name": "Dr. john smith",
-        "email": "john.smith@example.com",
-        "onboarded_on": "2023-01-15",
-        "experience": 10,
-        "specialty": "cardiology",
-        "patients": 150,
-        "ratings": 4.8
-    },
-    {
-        "name": "Dr. jane doe",
-        "email": "jane.doe@example.com",
-        "onboarded_on": "2022-05-10",
-        "experience": 8,
-        "specialty": "dermatology",
-        "patients": 200,
-        "ratings": 4.7
-    },
-    {
-        "name": "Dr. emily johnson",
-        "email": "emily.johnson@example.com",
-        "onboarded_on": "2021-09-25",
-        "experience": 5,
-        "specialty": "pediatrics",
-        "patients": 100,
-        "ratings": 4.9
-    },
-    {
-        "name": "Dr. michael brown",
-        "email": "michael.brown@example.com",
-        "onboarded_on": "2020-11-30",
-        "experience": 12,
-        "specialty": "orthopedics",
-        "patients": 250,
-        "ratings": 4.6
-    },
-    {
-        "name": "Dr. sarah wilson",
-        "email": "sarah.wilson@example.com",
-        "onboarded_on": "2023-03-01",
-        "experience": 3,
-        "specialty": "general practice",
-        "patients": 80,
-        "ratings": 4.5
-    }
-]
+import { useContext } from "../context";
+import { getDoctors, getUnmappedDoctors, manageDoctorStatus } from "../api";
+import CustomModal from "../components/modal";
+import CustomSelect from "../components/select";
+import { Formik } from "formik";
+import toast from "react-hot-toast";
 
 const Doctors = () => {
 
-    const handleRemove = () => {
-        // TODO: add remove api call here
+    const { state, setDoctors } = useContext();
+    const { doctors, addDoctorModal, doctorId, unmappedDoctors } = state.doctors;
+
+    const manageDoctors = async (action: string, doctorId: string) => {
+        const res = await manageDoctorStatus(doctorId, action)
+        if (res?.message.toLowerCase() === 'success') {
+            if ( action === 'onboard' ) {
+                toast.success('Doctor onboarded successfully');
+            } else {
+                toast.success('Doctor offboarded successfully');
+            }
+            getDepartmentDoctors();
+        }
+    }
+
+    const handleSearch = async (search: string) => {
+        const unmappedDoctorsData = await getUnmappedDoctors(search);
+        setDoctors(prev => ({
+            ...prev,
+            unmappedDoctors: (unmappedDoctorsData || []).map(
+                (item: Record<string, string>) => ({
+                    label: item.email, value: item.id
+                })
+            )
+        }));
+    }
+
+    const getDepartmentDoctors = async () => {
+        const pathname = window.location.pathname;
+        const dept = pathname.split('/');
+        const deptName = dept[dept.length - 1];
+
+        const data = await getDoctors(deptName);
+        const unmappedDoctorsData = await getUnmappedDoctors();
+        setDoctors(prev => ({
+            ...prev,
+            doctors: data || [],
+            addDoctorModal: false,
+            doctorId: '',
+            unmappedDoctors: (unmappedDoctorsData || []).map(
+                (item: Record<string, string>) => ({
+                    label: item.email, value: item.id
+                })
+            )
+        }));
     }
 
     useEffect(() => {
-        // TODO: take department id from url and fetch list of doctors for this hospital and speciality
+        getDepartmentDoctors();
     }, [])
 
     return (
         <div>
             <div className="text-black text-3xl m-8 text-primary font-bold">Doctors</div>
+            <div className="flex mx-8">
+                <Button
+                    className="bg-primary text-white ms-auto"
+                    onClick={() => setDoctors(prev => (
+                        { ...prev, doctorId: '', addDoctorModal: true }
+                    ))}
+                >
+                    Add Doctor
+                </Button>
+            </div>
             <div>
                 {doctors.map((doctor) => (
                     <Accordion className="my-6 mx-8 !bg-light !shadow-xl" key={doctor.name}>
@@ -74,11 +85,11 @@ const Doctors = () => {
                                 {
                                     [
                                         { label: 'Email', value: doctor.email },
-                                        { label: 'Onboarded On', value: doctor.onboarded_on },
+                                        { label: 'Onboarded On', value: doctor.onBoarded },
                                         { label: 'Experience', value: doctor.experience },
-                                        { label: 'Specialty', value: doctor.specialty },
-                                        { label: 'Patients Served', value: doctor.patients },
-                                        { label: 'Ratings', value: doctor.ratings },
+                                        { label: 'Specialty', value: doctor.speciality },
+                                        { label: 'Patients Served', value: doctor.patientServed },
+                                        { label: 'Ratings', value: doctor.rating },
                                     ].map(({ label, value }) => (
                                         <div key={`${label}-${value}`} className="grid grid-cols-12 gap-4 text-start my-2">
                                             <strong className="text-primary col-span-3">{label}</strong>
@@ -90,7 +101,9 @@ const Doctors = () => {
                             </div>
                             <Button
                                 className="bg-red-500 text-white ms-auto"
-                                onClick={handleRemove}
+                                onClick={() => {
+                                    manageDoctors('offboard', doctor.id)
+                                }}
                             >
                                 Remove
                             </Button>
@@ -98,6 +111,50 @@ const Doctors = () => {
                     </Accordion>
                 ))}
             </div>
+
+            {/* Add new department modal */}
+            <CustomModal
+                key={'add-doctor-modal'}
+                open={addDoctorModal}
+                title='Add Department'
+                onClose={() => setDoctors(prev => (
+                    { ...prev, doctorId: '', addDoctorModal: false }
+                ))}
+                onSuccess={() => {
+                    if (!doctorId) {
+                        toast.error('Please select doctor')
+                        return;
+                    }
+                    manageDoctors('onboard', doctorId)
+                }}
+                className='w-4/5 md:w-1/3'
+            >
+                <div className='flex flex-col'>
+                    <Formik
+                        initialValues={{ email: '' }}
+                        onSubmit={() => {}}
+                    >
+                        {
+                            ({ setFieldValue }) => (
+                                <CustomSelect
+                                    key={'unmapped-doctors'}
+                                    name="email"
+
+                                    options={unmappedDoctors}
+                                    setFieldValue={(name, value) => {
+                                        setDoctors((prev) => ({
+                                            ...prev,
+                                            doctorId: value
+                                        }))
+                                        setFieldValue(name, value);
+                                    }}
+                                    onSearch={handleSearch}
+                                />
+                            )
+                        }
+                    </Formik>
+                </div>
+            </CustomModal>
         </div>
     )
 }

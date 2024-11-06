@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 import * as CryptoJs from "crypto-js";
-import api from "../api/apiConfig";
 import Doctor from "../assets/images/doctor.png";
 import { useContext } from "../context";
 import { authView } from "../context/types";
@@ -11,6 +10,7 @@ import { registerHospitalSchema, registerHospitalValues } from "../validations/r
 import { registerDoctorSchema, registerDoctorValues } from "../validations/registerDoctor.validation";
 import { loginSchema, loginValues } from "../validations/login.validations";
 import { useNavigate } from "react-router-dom";
+import { getHospitalsList, login, registerDoctor, registerHospital } from "../api";
 
 const LandingPage = () => {
 
@@ -22,19 +22,13 @@ const LandingPage = () => {
   }
 
   const onHospitalSearch = async (search: string = '') => {
-    const url = `${process.env.REACT_APP_BASE_URL}/hospital?search=${search}`
-    await api.get(url).then(
-      res => {
-        setHospital((prev) => ([
-          ...prev,
-          ...res.data.map((obj: Record<string, string>) => ({ value: obj.id, label: obj.name }))
-        ]))
-      }
-    ).catch(
-      err => {
-        toast.error('Oops! Failed to retrive hospital. Please refresh and try again.')
-      }
-    );
+    const res = await getHospitalsList(search);
+    if (res) {
+      setHospital((prev) => ([
+        ...prev,
+        ...res.map((obj: Record<string, string>) => ({ value: obj.id, label: obj.name }))
+      ]))
+    }
   }
 
   useEffect(() => {
@@ -82,17 +76,11 @@ const LandingPage = () => {
       delete data.cpassword;
       data.password = encrypted;
 
-      const url = `${process.env.REACT_APP_BASE_URL}/hospital/register`
-      await api.post(url, data).then(
-        res => {
-          toast.success('Hospital resgistered successfully !');
-          setAuth((prev) => ({ ...prev, view: authView.login }));
-        }
-      ).catch(
-        err => {
-          toast.error('Oops! Failed to register hospital. Please try again.')
-        }
-      );
+      const res = await registerHospital(data);
+      if (res) {
+        toast.success('Hospital resgistered successfully !');
+        setAuth((prev) => ({ ...prev, view: authView.login }));
+      }
     }
 
     return (
@@ -129,17 +117,11 @@ const LandingPage = () => {
       delete data.cpassword;
       data.password = encrypted;
 
-      const url = `${process.env.REACT_APP_BASE_URL}/doctor`
-      await api.post(url, data).then(
-        res => {
-          setAuth((prev) => ({ ...prev, view: authView.login }));
-          toast.success('Doctor onboarded successfully !')
-        }
-      ).catch(
-        err => {
-          toast.error('Oops! Failed to register doctor. Please try again.')
-        }
-      );
+      const res = await registerDoctor(data);
+      if (res) {
+        setAuth((prev) => ({ ...prev, view: authView.login }));
+        toast.success('Doctor onboarded successfully !')
+      }
     }
 
     return (
@@ -180,22 +162,20 @@ const LandingPage = () => {
         values.password,
         process.env.REACT_APP_CRYPTO_SECRET_KEY as string
       ).toString();
-      url += state.loginState.toLowerCase() === 'hospital' ? '/hospital/login' : '/doctor/login';
 
-      await api.post(url, { ...values, password: encrypted }).then(
-        res => {
-          localStorage.setItem('token', res.data.token);
-          localStorage.setItem('type', state.loginState);
-          navigate('/main');
-        }
-      ).catch(
-        err => {
-          toast.error('Oops! Failed to login. Please try again.')
-        }
+      const res = await login(
+        { ...values, password: encrypted },
+        state.loginState.toLowerCase()
       );
+
+      if (res) {
+        localStorage.setItem('token', res.token);
+        localStorage.setItem('type', state.loginState);
+        navigate('/main');
+      }
     }
 
-    const handleLoginState = ( value: string ) => {
+    const handleLoginState = (value: string) => {
       setLoginState(value);
     }
 

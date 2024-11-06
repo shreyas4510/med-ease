@@ -1,46 +1,71 @@
 import { Card, CardContent, IconButton, TextField } from '@mui/material';
 import { Add, Close } from '@mui/icons-material';
-import { useState } from 'react';
 import CustomModal from '../components/modal';
 import { useNavigate } from 'react-router-dom';
-
-const departments = [
-    'Neurology',
-    'Cardiology',
-    'Pediatrics',
-    'Orthopedics',
-    'Dermatology',
-    'Oncology',
-    'Psychiatry',
-    'Gastroenterology',
-    'Endocrinology',
-    'Urology'
-];
+import { useContext } from '../context';
+import { getHospitalsDetails, manageDepartments } from '../api';
+import toast from 'react-hot-toast';
+import { useEffect } from 'react';
 
 const Departments = () => {
-    const [addDeptModal, setAddDeptModal] = useState(false);
-    const [removeDept, setRemoveDept] = useState('');
-    const [deptName, setDeptName] = useState('');
+
+    const { state, setDepartmentState } = useContext();
+    const { addDeptModal, removeDept, deptName, departments } = state.departmentState;
     const navigate = useNavigate();
 
-    const handleAddDepartment = () => {
-        // TODO: api call to add department
+    const handleAddDepartment = async () => {
+        const uniqueDepts = new Set([ ...departments, ...deptName.split(',') ]);
+        const depts = Array.from(uniqueDepts, value => value.trim());
+        const res = await manageDepartments({ departments: depts });
+        if (res) {
+            setDepartmentState(prev => ({
+                ...prev,
+                departments: res.departments
+            }));
+            toast.success('Departments added successfully');
+            setDepartmentState(prev => (
+                { ...prev, deptName: '', addDeptModal: false }
+            ));
+        }
     }
 
-    const handleRemoveDepartment = () => {
-        // TODO: api call to remove department
+    const handleRemoveDepartment = async () => {
+        const depts = [ ...departments ];
+        depts.splice( depts.findIndex(i => i === removeDept), 1 );
+        const res = await manageDepartments({ departments: depts });
+        if (res) {
+            setDepartmentState(prev => ({
+                ...prev,
+                departments: res.departments
+            }));
+            toast.success('Department removed successfully');
+            setDepartmentState(prev => ({ ...prev, removeDept: '' }))
+        }
     }
+
+    useEffect(() => {
+        ( async () => {
+            const hospitalData = await getHospitalsDetails();
+            setDepartmentState(prev => ({
+                ...prev,
+                departments: hospitalData.departments
+            }));
+        })()
+    }, [])
 
     return (
         <div className="px-16 my-5 font-poppins text-3xl text-white">
-            <div className="text-black text-3xl m-8 text-primary font-bold">Departmets</div>
+            <div className="text-black text-3xl m-8 text-primary font-bold">Departments</div>
             <div className="grid gap-5 grid-cols-1 sm:grid-cols-3 lg:grid-cols-6">
                 {[...departments, 'add'].map((department) => (
                     <Card
                         key={department}
                         onClick={() => {
                             department === 'add' ? 
-                            setAddDeptModal(true) :
+                            setDepartmentState(prev => ({
+                                ...prev,
+                                addDeptModal: true
+                            })) :
                             navigate(`/department/${department}`)
                         }}
                         className="
@@ -58,7 +83,10 @@ const Departments = () => {
                                 "
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    setRemoveDept(department)
+                                    setDepartmentState(prev => ({
+                                        ...prev,
+                                        removeDept: department
+                                    }))
                                 }}
                             >
                                 <Close className="!text-primary" />
@@ -87,15 +115,22 @@ const Departments = () => {
                 key={'add-dept-modal'}
                 open={addDeptModal}
                 title='Add Department'
-                onClose={() => setAddDeptModal(false)}
+                onClose={() => setDepartmentState(prev => (
+                    { ...prev, deptName: '', addDeptModal: false }
+                ))}
                 onSuccess={handleAddDepartment}
                 className='w-4/5 md:w-1/3'
             >
                 <div className='flex flex-col'>
                     <TextField
-                        label="Department Name"
+                        label="Department Names"
                         value={deptName}
-                        onChange={(e) => setDeptName(e.target.value)}
+                        onChange={(e) => {
+                            setDepartmentState(prev => ({
+                                ...prev,
+                                deptName: e.target.value 
+                            }))
+                        }}
                     />
                 </div>
             </CustomModal>
@@ -105,7 +140,7 @@ const Departments = () => {
                 key={'remove-dept-modal'}
                 open={ Boolean(removeDept) }
                 title='Remove Department'
-                onClose={() => setRemoveDept('')}
+                onClose={() => setDepartmentState(prev => ({ ...prev, removeDept: '' }))}
                 onSuccess={handleRemoveDepartment}
                 className='w-4/5 md:w-1/3'
             >

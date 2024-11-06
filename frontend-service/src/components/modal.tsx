@@ -21,7 +21,7 @@ const CustomModal = ({
                 {children}
                 <div className="mt-5 flex justify-end">
                     <Button className="bg-close-btn text-white me-4" onClick={onClose}>Close</Button>
-                    <Button className="bg-custom-gradient text-white ms-4" onClick={onSuccess}>Add</Button>
+                    <Button className="bg-custom-gradient text-white ms-4" onClick={onSuccess}>Submit</Button>
                 </div>
             </div>
         </Modal>

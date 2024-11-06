@@ -1,8 +1,10 @@
-import { BadRequestException, Body, Controller, HttpCode, Post } from '@nestjs/common';
-import { DoctorDto, LoginDto, TokenDto } from './doctor.dto';
+import { BadRequestException, Body, Controller, Get, HttpCode, Param, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
+import { DoctorDto, DoctorListDto, LoginDto, TokenDto } from './doctor.dto';
 import { DoctorService } from './doctor.service';
 import * as CryptoJS from 'crypto-js';
 import { passwordRegex } from 'src/utils/constants';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { Doctor } from './doctor.schema';
 
 @Controller('doctor')
 export class DoctorController {
@@ -43,6 +45,57 @@ export class DoctorController {
             }
         
             const data = await this.doctorService.login(body, decryptedPassword);
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    @HttpCode(200)
+    @UseGuards(AuthGuard)
+    @Put()
+    async managerDoctor(
+        @Body() body: Record<string, string>,
+        @Request() req
+    ): Promise<Record<string, string>> {
+        try {
+            const doctorId = body.doctor;
+            const action = body.action;
+            const hospitalId = req.user._id;
+
+            await this.doctorService.manageDoctor({
+                doctorId, action, hospitalId
+            });
+            return {
+                message: 'Success'
+            };
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
+
+    @HttpCode(200)
+    @UseGuards(AuthGuard)
+    @Get('/unmapped')
+    async getDoctorsList( @Query() query: Record<string, string> ): Promise<DoctorListDto[]> {
+        try {
+            const email = query.email;
+            const data = await this.doctorService.getUnmappedDoctors(email);
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    @HttpCode(200)
+    @UseGuards(AuthGuard)
+    @Get('/:department')
+    async getDoctorsByDepartment( @Request() req, @Param() params: Record<string, string> ): Promise<DoctorDto[]> {
+        try {
+            const hospitalId = req.user._id;
+            const deptName = params.department
+            const data = await this.doctorService.getDoctorsByDepartment(deptName, hospitalId);
             return data;
         } catch (error) {
             throw error;

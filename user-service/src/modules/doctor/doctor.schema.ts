@@ -21,8 +21,17 @@ export class Doctor {
   @Prop()
   speciality: string;
 
+  @Prop({ default: 0 })
+  patientServed: number;
+
+  @Prop({ default: 0 })
+  rating: number;
+
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: Hospital.name })
   hospital: Hospital;
+
+  @Prop()
+  onBoarded: Date;
 
   @Prop()
   createdAt?: Date

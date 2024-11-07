@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateSlotsDto } from './slots.dto';
 import { KafkaService } from '../kafka/kafka.service';
 import { HttpService } from "@nestjs/axios";
@@ -11,6 +11,15 @@ export class SlotsService {
 
     async create(payload: CreateSlotsDto, user): Promise<Record<string, string>> {
         try {
+
+            if (!user._id) {
+                throw new UnauthorizedException('Doctor not found');
+            }
+
+            if (!user.hospital) {
+                throw new NotFoundException('Doctor is not mapped to any hospital');
+            }
+
             await this.kafkaService.sendMessage(
                 process.env.KAFKA_USER_TOPIC,
                 JSON.stringify({

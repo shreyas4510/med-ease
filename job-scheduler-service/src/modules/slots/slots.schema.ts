@@ -8,6 +8,9 @@ export class Slots {
     @Prop()
     date: string;
 
+    @Prop({ default: '' })
+    title: string;
+
     @Prop()
     startTime: string;
 

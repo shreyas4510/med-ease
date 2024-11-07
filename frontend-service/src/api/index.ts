@@ -95,6 +95,29 @@ export const manageDoctorStatus = async (doctorId: string, action: string) => {
     }
 }
 
+export const manageSlots = async (payload: Record<string, string | Array<string>>) => {
+    try {
+        return await api('/slots', 'post', payload);
+    } catch (error) {
+        toast.error((error as ApiError).message);
+    }
+}
+
+export const deleteSlots = async (payload: Record<string, string | Array<string>>) => {
+    try {
+        return await api('/slots', 'delete', payload);
+    } catch (error) {
+        toast.error((error as ApiError).message);
+    }
+}
+
+export const getSlots = async (payload: Record<string, string | Array<string>>) => {
+    try {
+        return await api('/slots/get', 'post', payload);
+    } catch (error) {
+        toast.error((error as ApiError).message);
+    }
+}
 
 const api = async (
     url: string,
@@ -116,7 +139,7 @@ const api = async (
                 response = await AxiosInstance.put(url, body, { headers });
                 break;
             case 'delete':
-                response = await AxiosInstance.delete(url, { headers });
+                response = await AxiosInstance.delete(url, { headers, data: body });
                 break;
             default:
                 throw new Error(`Unsupported method: ${method}`);

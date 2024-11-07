@@ -1,3 +1,4 @@
+import { Dayjs } from "dayjs";
 import React, { ReactNode } from "react";
 
 export enum authView {
@@ -46,12 +47,24 @@ export interface doctorsStateType {
     }>;
 }
 
+export interface calendarDetails {
+    addSlots: boolean;
+    removeSlots: boolean;
+    selectedDays: Set<string>;
+    startDate: Dayjs | null;
+    endDate: Dayjs | null; 
+    startTime: Dayjs | null;
+    endTime: Dayjs | null;
+    events: Array<object>;
+}
+
 export interface contextStatesType {
     auth: authStateType;
     hospital: Array<hospitalOptionsType>;
     loginState: string;
     departmentState: departmentStateType;
-    doctors: doctorsStateType
+    doctors: doctorsStateType,
+    calendarDetails: calendarDetails;
 }
 
 export interface contextType {
@@ -61,6 +74,7 @@ export interface contextType {
     setLoginState: React.Dispatch<React.SetStateAction<string>>;
     setDepartmentState:  React.Dispatch<React.SetStateAction<departmentStateType>>;
     setDoctors: React.Dispatch<React.SetStateAction<doctorsStateType>>;
+    setCalendarDetails: React.Dispatch<React.SetStateAction<calendarDetails>>;
 }
 
 export interface providerProps {

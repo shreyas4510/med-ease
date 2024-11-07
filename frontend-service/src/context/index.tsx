@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import { authStateType, authView, contextType, departmentStateType, doctorsStateType, hospitalOptionsType, providerProps } from './types';
+import { authStateType, authView, calendarDetails, contextType, departmentStateType, doctorsStateType, hospitalOptionsType, providerProps } from './types';
 
 const Context = createContext<contextType | undefined>(undefined);
 
@@ -21,7 +21,18 @@ const Provider: React.FC<providerProps> = ({ children }) => {
         unmappedDoctors: []
     });
 
-    const state = { auth, hospital, loginState, departmentState, doctors };
+    const [calendarDetails, setCalendarDetails] = useState<calendarDetails>({
+        addSlots: false,
+        endDate: null,
+        endTime: null,
+        removeSlots: false,
+        selectedDays: new Set(),
+        startDate: null,
+        startTime: null,
+        events: []
+    })
+
+    const state = { auth, hospital, loginState, departmentState, doctors, calendarDetails };
 
     return (
         <Context.Provider value={{
@@ -30,7 +41,8 @@ const Provider: React.FC<providerProps> = ({ children }) => {
             setHospital,
             setLoginState,
             setDepartmentState,
-            setDoctors
+            setDoctors,
+            setCalendarDetails
         }}>
             {children}
         </Context.Provider>

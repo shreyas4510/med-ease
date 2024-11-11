@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import * as CryptoJs from "crypto-js";
 import Doctor from "../assets/images/doctor.png";
@@ -10,12 +10,25 @@ import { registerHospitalSchema, registerHospitalValues } from "../validations/r
 import { registerDoctorSchema, registerDoctorValues } from "../validations/registerDoctor.validation";
 import { loginSchema, loginValues } from "../validations/login.validations";
 import { useNavigate } from "react-router-dom";
-import { getHospitalsList, login, registerDoctor, registerHospital } from "../api";
+import { getAvailableSlots, getDoctorListByDepartment, getHospitalsList, login, registerDoctor, registerHospital } from "../api";
+import moment from "moment";
+import bookAppointmentSchema from "../validations/bookAppointment.validation";
 
 const LandingPage = () => {
-
   const navigate = useNavigate();
   const { state, setAuth, setHospital, setLoginState } = useContext();
+  const [ bookAppointmentFormData, setBookAppointmentFormData ] = useState<Record<string, string>>({
+    name: '',
+    age: '',
+    contact: '',
+    email: '',
+    city: '',
+    hospital: '',
+    speciality: '',
+    doctor: '',
+    appointmentDate: '',
+    slots: ''
+  });
 
   const handleReset = () => {
     setAuth((prev) => ({ ...prev, view: authView.landingPage }))
@@ -24,10 +37,13 @@ const LandingPage = () => {
   const onHospitalSearch = async (search: string = '') => {
     const res = await getHospitalsList(search);
     if (res) {
-      setHospital((prev) => ([
-        ...prev,
-        ...res.map((obj: Record<string, string>) => ({ value: obj.id, label: obj.name }))
-      ]))
+      setHospital({
+        options: [...res.map(({ _id, name }: Record<string, string>) => ({ label: name, value: _id }))],
+        departments: [],
+        doctors: [],
+        slots: [],
+        hospitalData: res
+      });
     }
   }
 
@@ -37,8 +53,73 @@ const LandingPage = () => {
 
   const BookAppointment = () => {
 
-    const handleSubmit = () => {
-      // TODO: api integration for book appointment
+    const onHospitalSelect = async (id: string, values: Record<string, string>) => {
+      const hospitalData = state.hospital.hospitalData.find(({ _id }) => (_id === id));
+      setHospital((prev) => {
+        return {
+          ...prev,
+          departments: [ ...(hospitalData?.departments as Array<string>).map((name) => ({ label: name, value: name })) ]
+        };
+      });
+      setBookAppointmentFormData(() => ({
+        ...values,
+        hospital: id
+      }));
+    }
+  
+    const onSpecialitySelect = async (id: string, values: Record<string, string>) => {
+      const res = await getDoctorListByDepartment({ hospitalId: values.hospital, department: id });
+      if (res) {
+        setHospital((prev) => {
+          return {
+            ...prev,
+            doctors: [ ...res.map(({ id, name }: Record<string, string>) => ({ label: name, value: id })) ]
+          };
+        });
+      }
+      setBookAppointmentFormData(() => ({
+        ...values,
+        speciality: id
+      }));
+    }
+  
+    const onDateChange = async (id: string, values: Record<string, string>) => {
+  
+      if (!(values.hospital && values.doctor)) {
+        toast.error('Fill in all details and choose the date again');
+        return;
+      }
+  
+      const date = moment(id).format('DD-MM-YYYY');
+      const res = await getAvailableSlots({
+        startDate: date,
+        endDate: date,
+        doctor: values.doctor,
+        hospital: values.hospital,
+        available: true
+      });
+  
+      if (res) {
+        setHospital((prev) => {
+          return {
+            ...prev,
+            slots: [ ...res.map(({ _id, startTime, endTime }: Record<string, string>) => ({
+              label: `${startTime}-${endTime}`,
+              value: _id
+            })) ]
+          };
+        });
+      }
+  
+      setBookAppointmentFormData(() => ({
+        ...values,
+        appointmentDate: id
+      }));
+    }
+
+    const handleSubmit = ( values: Record<string, string> ) => {
+      console.log(values);
+      // TODO: api integration for appointment booking
     }
 
     return (
@@ -47,19 +128,55 @@ const LandingPage = () => {
         title="Book Appointment"
         top={'top-8'}
         handleReset={handleReset}
-        // TODO: add validation schema and initial values for book appointment
-        initialValues={{}}
-        validationSchema={{} as any}
+        initialValues={bookAppointmentFormData}
+        validationSchema={bookAppointmentSchema}
         handleSubmit={handleSubmit}
         formData={[
           { label: 'Name', name: 'name', className: 'col-span-1 flex flex-col', type: 'text' },
           { label: 'Age', name: 'age', className: 'col-span-1 flex flex-col', type: 'number' },
+          { label: 'Email', name: 'email', className: 'col-span-1 flex flex-col', type: 'email' },
           { label: 'Contact', name: 'contact', className: 'col-span-1 flex flex-col', type: 'text' },
           { label: 'City', name: 'city', className: 'col-span-1 flex flex-col', type: 'text' },
-          { label: 'Speciality', name: 'speciality', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'Hospital', name: 'hospital', className: 'col-span-2 flex flex-col', type: 'text' },
-          { label: 'Doctor', name: 'doctor', className: 'col-span-1 flex flex-col', type: 'text' },
-          { label: 'Appointment Date', name: 'appointmentDate', className: 'col-span-1 flex flex-col', type: 'text' }
+          {
+            label: 'Hospital',
+            name: 'hospital',
+            className: 'col-span-1 flex flex-col',
+            type: 'select',
+            isSearchable: true,
+            options: [...state.hospital.options],
+            onSearch: onHospitalSearch,
+            onChange: onHospitalSelect
+          },
+          {
+            label: 'Speciality',
+            name: 'speciality',
+            className: 'col-span-1 flex flex-col',
+            type: 'select',
+            options: state.hospital.departments,
+            onChange: onSpecialitySelect
+          },
+          {
+            label: 'Doctor',
+            name: 'doctor',
+            className: 'col-span-1 flex flex-col',
+            type: 'select',
+            options: state.hospital.doctors
+          },
+          {
+            label: 'Appointment Date',
+            name: 'appointmentDate',
+            className: 'col-span-1 flex flex-col',
+            type: 'date',
+            onChange: onDateChange
+          },
+          {
+            label: 'Slots',
+            name: 'slots',
+            className: 'col-span-1 flex flex-col',
+            type: 'select',
+            isSearchable: true,
+            options: [...state.hospital.slots ],
+          },
         ]}
       />
     )
@@ -144,7 +261,7 @@ const LandingPage = () => {
             className: 'col-span-2 flex flex-col',
             type: 'select',
             isSearchable: true,
-            options: state.hospital,
+            options: state.hospital.options,
             onSearch: onHospitalSearch
           },
           { label: 'Experience', name: 'experience', className: 'col-span-2 flex flex-col', type: 'number' },

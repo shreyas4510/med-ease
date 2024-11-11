@@ -139,7 +139,7 @@ export class SlotsService {
 
     async getSlots(data: Partial<SlotsDto>): Promise<Array<SlotsDocument>> {
         try {
-            let { startDate, endDate } = data;
+            let { startDate, endDate, available } = data;
 
             const dates = []
             let curDate = moment(startDate, 'DD-MM-YYYY');
@@ -148,14 +148,19 @@ export class SlotsService {
                 curDate = curDate.add(1, 'day');
             }
 
-            const res = await this.slotsModal.find({
+            const query: Record< string, string | boolean | object > = {
                 date: {
                     $in: dates 
                 },
                 hospitalId: data.hospital,
                 doctorId: data.doctor
-            });
-            
+            }
+
+            if (available) {
+                query.status = 'AVAILABLE';
+            }
+
+            const res = await this.slotsModal.find(query);
             return res;
         } catch (error) {
             throw error;

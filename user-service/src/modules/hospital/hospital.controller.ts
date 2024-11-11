@@ -1,9 +1,10 @@
 import { BadRequestException, Body, Controller, Get, HttpCode, Post, Query, Request, UseGuards } from '@nestjs/common';
 import { HospitalService } from './hospital.service';
-import { DepartmentDto, HospitalDetailsDto, HospitalDto, LoginDto, TokenDto } from "./hospital.dto";
+import { DepartmentDto, HospitalDto, LoginDto, TokenDto } from "./hospital.dto";
 import * as CryptoJS from 'crypto-js';
 import { passwordRegex } from 'src/utils/constants';
 import { AuthGuard } from '../../auth/auth.guard';
+import { Hospital } from './hospital.schema';
 
 @Controller('hospital')
 export class HospitalController {
@@ -77,7 +78,7 @@ export class HospitalController {
 
     @HttpCode(200)
     @Get()
-    async findHospitals(@Query() query: Record<string, string>): Promise<Array<HospitalDetailsDto>> {
+    async findHospitals(@Query() query: Record<string, string>): Promise<Array<Hospital>> {
         try {
             const data = await this.hospitalService.findHospitals(query.search);
             return data;

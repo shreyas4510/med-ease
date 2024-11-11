@@ -62,11 +62,3 @@ export class DepartmentDto {
     @IsNotEmpty()
     departments: string[]
 }
-
-export class HospitalDetailsDto {
-    @IsNotEmpty()
-    id: string;
-
-    @IsNotEmpty()
-    name: string;
-}

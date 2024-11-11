@@ -36,3 +36,7 @@
     transform: rotate(360deg);
   }
 }
+
+.css-1dune0f-MuiInputBase-input-MuiOutlinedInput-input {
+  padding: 11px !important;
+}

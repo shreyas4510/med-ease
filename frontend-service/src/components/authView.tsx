@@ -5,6 +5,8 @@ import Input from "./input";
 import Button from "./button";
 import { ErrorMessage, Form, Formik } from "formik";
 import CustomSelect from "./select";
+import CustomDatePicker from "./datePicker";
+import moment from "moment";
 
 const AuthView = ({
     title,
@@ -37,7 +39,8 @@ const AuthView = ({
 
     const InputView = (
         obj: formDataType,
-        setFieldValue: (name: string, option: string) => void
+        setFieldValue: (name: string, option: string) => void,
+        values: Record<string, string>
     ) => {
         switch (obj.type) {
             case 'select':
@@ -45,8 +48,27 @@ const AuthView = ({
                     <CustomSelect
                         name={obj.name}
                         options={obj.options as []}
-                        setFieldValue={setFieldValue}
+                        setFieldValue={(name, options) => {
+                            setFieldValue(name, options);
+                            if (typeof obj.onChange === 'function') {
+                                obj.onChange(options, values)
+                            }
+                        }}
                         onSearch={obj.onSearch}
+                    />
+                )
+            case 'date':
+                return (
+                    <CustomDatePicker
+                        name={obj.name}
+                        label={''}
+                        minDate={moment().add(1, 'day').toISOString()}
+                        setFieldValue={(name, options) => {
+                            setFieldValue(name, options);
+                            if (typeof obj.onChange === 'function') {
+                                obj.onChange(options, values)
+                            }
+                        }}
                     />
                 )
             default:
@@ -91,13 +113,13 @@ const AuthView = ({
                         validationSchema={validationSchema}
                         onSubmit={handleSubmit}
                     >
-                        {({ setFieldValue, isSubmitting, dirty, isValid }) => (
+                        {({ values, setFieldValue, isSubmitting, dirty, isValid }) => (
                             <Form className="grid grid-cols-2 gap-4" >
                                 {
                                     formData.map((item, index) => (
                                         <div className={item.className} key={`auth-form-${item.label}-${index}`}>
                                             <label className="text-start text-blue-500 font-medium">{item.label}</label>
-                                            {InputView(item, setFieldValue)}
+                                            {InputView(item, setFieldValue, values)}
                                             <ErrorMessage name={item.name} component="div" className="text-start text-red-500 text-xs" />
                                         </div>
                                     ))

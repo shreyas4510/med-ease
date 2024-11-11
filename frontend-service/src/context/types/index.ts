@@ -14,8 +14,23 @@ export interface authStateType {
 }
 
 export interface hospitalOptionsType {
-    value: string;
-    label: string;
+    options: Array<{
+        label: string;
+        value: string;
+    }>
+    departments: Array<{
+        label: string;
+        value: string;
+    }>;
+    doctors: Array<{
+        label: string;
+        value: string;
+    }>;
+    slots: Array<{
+        label: string;
+        value: string;
+    }>;
+    hospitalData: Record<string, string | Array<string>>[]
 }
 
 export interface departmentStateType {
@@ -33,7 +48,7 @@ interface doctorDetails {
     speciality: string;
     createdAt: string;
     patientServed: number;
-    rating: number; 
+    rating: number;
     onBoarded: string;
 }
 export interface doctorsStateType {
@@ -52,7 +67,7 @@ export interface calendarDetails {
     removeSlots: boolean;
     selectedDays: Set<string>;
     startDate: Dayjs | null;
-    endDate: Dayjs | null; 
+    endDate: Dayjs | null;
     startTime: Dayjs | null;
     endTime: Dayjs | null;
     events: Array<object>;
@@ -60,7 +75,7 @@ export interface calendarDetails {
 
 export interface contextStatesType {
     auth: authStateType;
-    hospital: Array<hospitalOptionsType>;
+    hospital: hospitalOptionsType;
     loginState: string;
     departmentState: departmentStateType;
     doctors: doctorsStateType,
@@ -70,9 +85,9 @@ export interface contextStatesType {
 export interface contextType {
     state: contextStatesType;
     setAuth: React.Dispatch<React.SetStateAction<authStateType>>;
-    setHospital: React.Dispatch<React.SetStateAction<hospitalOptionsType[]>>;
+    setHospital: React.Dispatch<React.SetStateAction<hospitalOptionsType>>;
     setLoginState: React.Dispatch<React.SetStateAction<string>>;
-    setDepartmentState:  React.Dispatch<React.SetStateAction<departmentStateType>>;
+    setDepartmentState: React.Dispatch<React.SetStateAction<departmentStateType>>;
     setDoctors: React.Dispatch<React.SetStateAction<doctorsStateType>>;
     setCalendarDetails: React.Dispatch<React.SetStateAction<calendarDetails>>;
 }

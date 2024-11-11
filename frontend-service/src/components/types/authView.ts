@@ -10,6 +10,7 @@ export interface formDataType {
         label: string;
     }>;
     onSearch?: (search: string) => void
+    onChange?: (id: string, values: Record<string, string>) => void
 }
 
 export interface TProps {

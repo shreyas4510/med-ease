@@ -21,4 +21,15 @@ export class SlotsController {
             throw error;
         }
     }
+
+    @HttpCode(200)
+    @Post('/available')
+    async getAvailableSlots( @Body() payload: Partial<SlotsDto> ): Promise<Array<SlotsDocument>> {
+        try {
+            const data = this.slotService.getSlots(payload);
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    }
 }

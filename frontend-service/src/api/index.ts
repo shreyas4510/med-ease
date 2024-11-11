@@ -12,7 +12,15 @@ interface ApiError {
 
 export const getHospitalsList = async (search: string) => {
     try {
-        return await api(`/hospital?search=${search}`, 'get');
+        return await api({ path: `/hospital?search=${search}`, method: 'get' });
+    } catch (error) {
+        toast.error((error as ApiError).message);
+    }
+}
+
+export const getDoctorListByDepartment = async (body: Record<string, string> ) => {
+    try {
+        return await api({ path: `/doctor/list`, method: 'post', body});
     } catch (error) {
         toast.error((error as ApiError).message);
     }
@@ -20,7 +28,7 @@ export const getHospitalsList = async (search: string) => {
 
 export const registerHospital = async (data: object) => {
     try {
-        return await api('/hospital/register', 'post', data);
+        return await api({ path: '/hospital/register', method: 'post', body: data });
     } catch (error) {
         toast.error((error as ApiError).message);
     }
@@ -28,7 +36,7 @@ export const registerHospital = async (data: object) => {
 
 export const registerDoctor = async (data: object) => {
     try {
-        return await api('/doctor', 'post', data);
+        return await api({ path: '/doctor', method: 'post', body: data });
     } catch (error) {
         toast.error((error as ApiError).message);
     }
@@ -36,8 +44,8 @@ export const registerDoctor = async (data: object) => {
 
 export const login = async (data: object, type: string) => {
     try {
-        const url = type === 'hospital' ? '/hospital/login' : '/doctor/login';
-        return await api(url, 'post', data);
+        const path = type === 'hospital' ? '/hospital/login' : '/doctor/login';
+        return await api({ path, method: 'post', body: data });
     } catch (error) {
         toast.error((error as ApiError).message);
     }
@@ -45,7 +53,7 @@ export const login = async (data: object, type: string) => {
 
 export const manageDepartments = async (payload: Record<string, Array<string>>) => {
     try {
-        return await api('/hospital/departments', 'post', payload);
+        return await api({ path: '/hospital/departments', method: 'post', body: payload });
     } catch (error) {
         toast.error((error as ApiError).message);
     }
@@ -53,7 +61,7 @@ export const manageDepartments = async (payload: Record<string, Array<string>>) 
 
 export const getDepartments = async (payload: Record<string, Array<string>>) => {
     try {
-        return await api('/hospital/departments', 'post', payload);
+        return await api({ path: '/hospital/departments', method: 'post', body: payload });
     } catch (error) {
         toast.error((error as ApiError).message);
     }
@@ -61,7 +69,7 @@ export const getDepartments = async (payload: Record<string, Array<string>>) => 
 
 export const getHospitalsDetails = async () => {
     try {
-        return await api('/hospital/details', 'get');
+        return await api({ path: '/hospital/details', method: 'get' });
     } catch (error) {
         toast.error((error as ApiError).message);
     }
@@ -69,7 +77,7 @@ export const getHospitalsDetails = async () => {
 
 export const getDoctors = async (deptName: string) => {
     try {
-        return await api(`/doctor/${deptName}`, 'get');
+        return await api({ path: `/doctor/${deptName}`, method: 'get' });
     } catch (error) {
         toast.error((error as ApiError).message);
     }
@@ -77,7 +85,7 @@ export const getDoctors = async (deptName: string) => {
 
 export const getUnmappedDoctors = async (email: string = '') => {
     try {
-        return await api(`/doctor/unmapped?email=${encodeURIComponent(email)}`, 'get');
+        return await api({ path: `/doctor/unmapped?email=${encodeURIComponent(email)}`, method: 'get' });
     } catch (error) {
         toast.error((error as ApiError).message);
     }
@@ -89,7 +97,7 @@ export const manageDoctorStatus = async (doctorId: string, action: string) => {
             doctor: doctorId,
             action: action
         };
-        return await api(`/doctor`, 'put', payload);
+        return await api({ path: `/doctor`, method: 'put', body: payload });
     } catch (error) {
         toast.error((error as ApiError).message);
     }
@@ -97,7 +105,7 @@ export const manageDoctorStatus = async (doctorId: string, action: string) => {
 
 export const manageSlots = async (payload: Record<string, string | Array<string>>) => {
     try {
-        return await api('/slots', 'post', payload);
+        return await api({ path: '/slots', method: 'post', body: payload });
     } catch (error) {
         toast.error((error as ApiError).message);
     }
@@ -105,7 +113,7 @@ export const manageSlots = async (payload: Record<string, string | Array<string>
 
 export const deleteSlots = async (payload: Record<string, string | Array<string>>) => {
     try {
-        return await api('/slots', 'delete', payload);
+        return await api({ path: '/slots', method: 'delete', body: payload });
     } catch (error) {
         toast.error((error as ApiError).message);
     }
@@ -113,21 +121,48 @@ export const deleteSlots = async (payload: Record<string, string | Array<string>
 
 export const getSlots = async (payload: Record<string, string | Array<string>>) => {
     try {
-        return await api('/slots/get', 'post', payload);
+        return await api({ path: '/slots/get', method: 'post', body: payload });
     } catch (error) {
         toast.error((error as ApiError).message);
     }
 }
 
-const api = async (
-    url: string,
-    method: 'get' | 'put' | 'post' | 'delete',
-    body: object = {},
-    headers: object = {}
-) => {
+export const getAvailableSlots = async (payload: Record<string, string | boolean>) => {
+    try {
+        return await api({ path: '/slots/available', method: 'post', body: payload, type: 'scheduler' });
+    } catch (error) {
+        toast.error((error as ApiError).message);
+    }
+}
+
+interface TProps {
+    path: string;
+    method: 'get' | 'put' | 'post' | 'delete';
+    body?: object;
+    headers?: object;
+    type?: 'scheduler' | 'user';
+}
+
+const api = async ({
+    path,
+    method,
+    body = {},
+    headers = {},
+    type = 'user'
+}: TProps ) => {
     try {
         let response;
-        url = `${process.env.REACT_APP_BASE_URL}${url}`;
+        let url;
+
+        switch (type.toLowerCase()) {
+            case 'scheduler':
+                url = `${process.env.REACT_APP_SCHEDULER_BASE_URL}${path}`
+                break;
+            default:
+                url = `${process.env.REACT_APP_USER_BASE_URL}${path}`
+                break;
+        }
+
         switch (method) {
             case 'get':
                 response = await AxiosInstance.get(url, { headers });

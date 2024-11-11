@@ -53,4 +53,7 @@ export class SlotsDto {
         message: 'endDate must be in format DD-MM-YYYY',
     })
     endDate: string;
+
+    @IsOptional()
+    available: boolean;
 }

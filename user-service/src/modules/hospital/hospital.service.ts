@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Hospital } from './hospital.schema';
 import { Model } from 'mongoose';
-import { DepartmentDto, HospitalDetailsDto, HospitalDto, LoginDto, TokenDto } from './hospital.dto';
+import { DepartmentDto, HospitalDto, LoginDto, TokenDto } from './hospital.dto';
 import { JwtService } from '@nestjs/jwt';
 import * as CryptoJS from 'crypto-js';
 
@@ -66,17 +66,13 @@ export class HospitalService {
         }
     }
 
-    async findHospitals(search: string): Promise<HospitalDetailsDto[]> {
+    async findHospitals(search: string): Promise<Hospital[]> {
         try {
             const searchTerm = new RegExp(search, 'i');
             const res = await this.hospitalModel
                 .find({ name: searchTerm })
                 .limit(10);
-            const data = res.map(item => ({
-                id: String(item._id),
-                name: `${item.name} - ${item.city}, ${item.state}, ${item.zipCode}`
-            }));
-            return data;
+            return res;
         } catch (error) {
             throw error;
         }

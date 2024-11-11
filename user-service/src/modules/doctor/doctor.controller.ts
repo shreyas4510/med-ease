@@ -100,4 +100,17 @@ export class DoctorController {
             throw error;
         }
     }
+
+    @HttpCode(200)
+    @Post('/list')
+    async getDoctorsListByDepartment( @Body() body: Record<string, string> ): Promise<DoctorDto[]> {
+        try {
+            const hospitalId = body.hospitalId;
+            const deptName = body.department
+            const data = await this.doctorService.getDoctorsByDepartment(deptName, hospitalId);
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    }
 }

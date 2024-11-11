@@ -1,5 +1,5 @@
 
-import { IsArray, IsEnum, IsNotEmpty, IsString, Matches } from 'class-validator';
+import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
 
 export enum WeekDays {
     Mon = 'Mon',
@@ -65,4 +65,7 @@ export class SlotsDto {
 
     @IsString()
     hospital: string;
+
+    @IsOptional()
+    available: boolean;
 }

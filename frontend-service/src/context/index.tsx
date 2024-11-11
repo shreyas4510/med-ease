@@ -5,7 +5,13 @@ const Context = createContext<contextType | undefined>(undefined);
 
 const Provider: React.FC<providerProps> = ({ children }) => {
     const [auth, setAuth] = useState<authStateType>({ view: authView.landingPage });
-    const [hospital, setHospital] = useState<hospitalOptionsType[]>([]);
+    const [hospital, setHospital] = useState<hospitalOptionsType>({
+        departments: [],
+        options: [],
+        hospitalData: [],
+        doctors: [],
+        slots: []
+    });
     const [loginState, setLoginState] = useState<string>('hospital');
     const [departmentState, setDepartmentState] = useState<departmentStateType>({
         addDeptModal: false,

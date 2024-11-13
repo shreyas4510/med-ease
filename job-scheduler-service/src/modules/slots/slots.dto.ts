@@ -1,5 +1,5 @@
 
-import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
+import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, Matches, IsMongoId } from 'class-validator';
 
 export enum WeekDays {
     Mon = 'Mon',
@@ -68,4 +68,46 @@ export class SlotsDto {
 
     @IsOptional()
     available: boolean;
+}
+
+export class AppointmentBookDto {
+    @IsNotEmpty()
+    @IsString()
+    slotId: string;
+
+    @IsNotEmpty()
+    @IsMongoId()
+    patientId: string;
+
+    @IsNotEmpty()
+    @IsString()
+    patientName: string;
+
+    @IsNotEmpty()
+    @IsString()
+    patientEmail: string;
+
+    @IsNotEmpty()
+    @IsString()
+    patientContact: string;
+
+    @IsNotEmpty()
+    @IsString()
+    hospitalName: string;
+
+    @IsNotEmpty()
+    @IsString()
+    hospitalAddress: string;
+
+    @IsNotEmpty()
+    @IsString()
+    doctorName: string;
+
+    @IsNotEmpty()
+    @IsMongoId()
+    appointmentId: string;
+
+    @IsNotEmpty()
+    @IsString()
+    appointmentTitle: string;
 }

@@ -233,7 +233,7 @@ export class SlotsService {
             throw new NotFoundException('Slot not found.');
         }
 
-        slot.title = appointment.appointmentTitle;
+        slot.title = `Appointment with Dr. ${appointment.doctorName} at ${slot.startTime} \nVenue: ${appointment.hospitalName} ,${appointment.hospitalAddress}`;;
         slot.patientId = appointment.patientId;
         slot.status = 'BOOKED';
         await slot.save();
@@ -249,7 +249,7 @@ export class SlotsService {
                         doctorName: appointment.doctorName,
                         hospitalName: appointment.hospitalName,
                         hospitalAddress: appointment.hospitalAddress,
-                        message: appointment.appointmentTitle,
+                        message: slot.title,
                         appointmentDate: slot.date,
                         appointmentTime: `${slot.startTime} - ${slot.endTime}`
                     }

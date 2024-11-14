@@ -106,8 +106,4 @@ export class AppointmentBookDto {
     @IsNotEmpty()
     @IsMongoId()
     appointmentId: string;
-
-    @IsNotEmpty()
-    @IsString()
-    appointmentTitle: string;
 }

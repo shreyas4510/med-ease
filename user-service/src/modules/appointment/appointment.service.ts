@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAppointmentDto } from './appointment.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Appointment, Patient } from './appointment.schema';
@@ -15,7 +15,7 @@ export class AppointmentService {
         @InjectModel(Appointment.name) private appointmentModel: Model<Appointment>,
         @InjectModel(Doctor.name) private doctorModel: Model<Doctor>,
         @InjectModel(Hospital.name) private hospitalModel: Model<Hospital>,
-        private kafkaService: KafkaService
+        @Inject(forwardRef(() => KafkaService)) private kafkaService: KafkaService
     ) { }
 
     async bookAppointment(body: CreateAppointmentDto): Promise<Record<string, string>> {
@@ -65,13 +65,14 @@ export class AppointmentService {
             const message = {
                 slotId: slot,
                 patientId: patient._id,
+                appointmentId: appointment._id,
+                doctorId: doctorData._id,
                 patientName: patient.name,
-                patientEmail: patient.email, 
-                patientContact: patient.contact,
-                hospitalName: hospitalData.name,
-                hospitalAddress: `${hospitalData.city}, ${hospitalData.state} - ${hospitalData.zipCode}`,
                 doctorName: doctorData.name,
-                appointmentId: appointment._id
+                hospitalName: hospitalData.name,
+                patientEmail: patient.email,
+                patientContact: patient.contact,
+                hospitalAddress: `${hospitalData.city}, ${hospitalData.state} - ${hospitalData.zipCode}`,
             };
 
             await this.kafkaService.sendMessage(
@@ -87,6 +88,36 @@ export class AppointmentService {
                 message: 'Your appointment is currently under process. You will be notified once it is successfully booked or if there is an issue.',
             };
         } catch (error) {
+            throw error;
+        }
+    }
+
+    async processPostAppointment(payload): Promise<void> {
+        try {
+            const { doctorId, patientId, appointmentId, rating } = payload;
+            const appointment = await this.appointmentModel.findById(appointmentId);
+            if (!appointment) {
+                throw new NotFoundException(`Appointment not found for ${appointmentId}`);
+            }
+            appointment.rating = rating;
+            appointment.status = 'DONE';
+            await appointment.save();
+
+            const doctor = await this.doctorModel.findById(doctorId);
+            if (!doctor) {
+                throw new NotFoundException(`Doctor not found ${doctorId}`);
+            }
+            
+            const totalRating = doctor.patientServed * doctor.rating;
+
+            doctor.patientServed += 1;
+            const newTotalRating = totalRating + Number(rating);
+
+            doctor.rating = newTotalRating / doctor.patientServed;
+            await doctor.save();
+            console.log('Appointment rated and records updated successfully');
+        } catch (error) {
+            console.error('Failed to update appointment rating', error.message);
             throw error;
         }
     }

@@ -3,11 +3,11 @@ import { IsString, IsNotEmpty, IsEmail, IsPhoneNumber, IsDateString } from 'clas
 export class AppointmentNotificationDto {
     @IsNotEmpty()
     @IsString()
-    patientName: string;
+    patientContact: string;
 
     @IsNotEmpty()
     @IsString()
-    patientContact: string;
+    message: string;
 
     @IsNotEmpty()
     @IsEmail()
@@ -15,25 +15,17 @@ export class AppointmentNotificationDto {
 
     @IsNotEmpty()
     @IsString()
-    doctorName: string;
+    type: string;
 
     @IsNotEmpty()
     @IsString()
-    hospitalName: string;
+    patientId: string;
 
     @IsNotEmpty()
     @IsString()
-    hospitalAddress: string;
+    appointmentId: string;
 
     @IsNotEmpty()
     @IsString()
-    message: string;
-
-    @IsNotEmpty()
-    @IsDateString()
-    appointmentDate: string;
-
-    @IsNotEmpty()
-    @IsString()
-    appointmentTime: string;
+    doctorId: string;
 }

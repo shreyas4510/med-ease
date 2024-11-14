@@ -28,6 +28,10 @@ export class KafkaService {
     }
 
     async processTopic( topic: string, payload ) {
+        console.log('KAFKA MESSAGE RECEIVED');
+        console.log(topic);
+        console.log(payload);
+
         payload = JSON.parse(payload);
         switch (topic) {
             case process.env.KAFKA_USER_TOPIC:

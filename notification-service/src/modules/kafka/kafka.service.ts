@@ -17,7 +17,21 @@ export class KafkaService {
         this.consumeMessages();
     }
 
+    async sendMessage(topic: string, message: string) {
+        const producer = this.kafka.producer();
+        await producer.connect();
+        await producer.send({
+            topic,
+            messages: [{ value: message }],
+        });
+        await producer.disconnect();
+    }
+
     async processTopic( topic: string, payload ) {
+        console.log('KAFKA MESSAGE RECEIVED');
+        console.log(topic);
+        console.log(payload);
+
         payload = JSON.parse(payload);
         if (topic === process.env.KAFKA_NOTIFICATION_TOPIC) {
             this.messageService.sendMessage(payload);

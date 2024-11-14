@@ -192,10 +192,14 @@ export class SlotsService {
 
         if (type === 'PRE') {
             jobTime = preDelay;
-            message = `Reminder: Appointment with Dr. ${appointment.doctorName} at ${slot.startTime}`;
+            message = `
+                Hi ${appointment.patientName}!\nReminder: Appointment with Dr. ${appointment.doctorName} at ${slot.startTime}\nThank you!
+            `;
         } else {
             jobTime = postDelay;
-            message = `Thanks for coming in today! I hope the appointment went well.`;
+            message = `
+               Hi ${appointment.patientName}!\nPlease rate the doctor's service on a scale of 1 to 5.\nReply with "RATING - X".Thank you!
+            `;
         }
 
         const job = new this.jobModel({
@@ -211,17 +215,30 @@ export class SlotsService {
         const delay = moment(`${slot.date}, ${jobTime}`, 'DD-MM-YYYY, hh:mm A').diff(
             moment(), 'milliseconds'
         );
-        await this.queueService.addJob({
-            patientName: appointment.patientName,
-            patientContact: appointment.patientContact,
-            patientEmail: appointment.patientEmail,
-            doctorName: appointment.doctorName,
-            hospitalName: appointment.hospitalName,
-            hospitalAddress: appointment.hospitalAddress,
-            message,
-            appointmentDate: slot.date,
-            appointmentTime: `${slot.startTime} - ${slot.endTime}`
-        }, delay);
+
+        if (type === 'BOOK') {
+            await this.queueProcessor.process({
+                data: {
+                    patientContact: appointment.patientContact,
+                    message: slot.title,
+                    patientEmail: appointment.patientEmail,
+                    type: type,
+                    patientId: appointment.patientId,
+                    appointmentId: appointment.appointmentId,
+                    doctorId: appointment.doctorId
+                }
+            } as QueueJob);
+        } else {
+            await this.queueService.addJob({
+                patientContact: appointment.patientContact,
+                message,
+                patientEmail: appointment.patientEmail,
+                type: type,
+                patientId: appointment.patientId,
+                appointmentId: appointment.appointmentId,
+                doctorId: appointment.doctorId
+            }, delay);
+        }
     }
 
     async bookAppointment(appointment: AppointmentBookDto) {
@@ -233,30 +250,14 @@ export class SlotsService {
             throw new NotFoundException('Slot not found.');
         }
 
-        slot.title = `Appointment with Dr. ${appointment.doctorName} at ${slot.startTime} \nVenue: ${appointment.hospitalName} ,${appointment.hospitalAddress}`;;
+        slot.title = `Appointment with Dr. ${appointment.doctorName} at ${slot.startTime} \nVenue: ${appointment.hospitalName} ,${appointment.hospitalAddress}`;
         slot.patientId = appointment.patientId;
         slot.status = 'BOOKED';
         await slot.save();
 
         const jobTypes = ['PRE', 'POST', 'BOOK'];
         await Promise.all(jobTypes.map(type => {
-            if (type === 'BOOK') {
-                return this.queueProcessor.process({
-                    data: {
-                        patientName: appointment.patientName,
-                        patientContact: appointment.patientContact,
-                        patientEmail: appointment.patientEmail,
-                        doctorName: appointment.doctorName,
-                        hospitalName: appointment.hospitalName,
-                        hospitalAddress: appointment.hospitalAddress,
-                        message: slot.title,
-                        appointmentDate: slot.date,
-                        appointmentTime: `${slot.startTime} - ${slot.endTime}`
-                    }
-                } as QueueJob);
-            } else {
-                return this.addJobToQueue(type, appointment, slot);
-            }
+            return this.addJobToQueue(type, appointment, slot);
         }));
     }
 }

@@ -49,6 +49,9 @@ export class Appointment {
     @Prop({ default: 'PENDING' })
     status: string;
 
+    @Prop({ default: 0 })
+    rating: number;  
+
     @Prop({ default: Date.now })
     createdAt?: Date;
 

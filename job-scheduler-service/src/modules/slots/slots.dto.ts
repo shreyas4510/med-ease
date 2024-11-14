@@ -73,15 +73,31 @@ export class SlotsDto {
 export class AppointmentBookDto {
     @IsNotEmpty()
     @IsString()
-    slotId: string;
-
+    appointmentId: string;
+    
     @IsNotEmpty()
     @IsMongoId()
     patientId: string;
 
     @IsNotEmpty()
     @IsString()
+    doctorId: string;
+
+    @IsNotEmpty()
+    @IsString()
+    slotId: string;
+
+    @IsNotEmpty()
+    @IsString()
+    doctorName: string;
+
+    @IsNotEmpty()
+    @IsString()
     patientName: string;
+
+    @IsNotEmpty()
+    @IsString()
+    hospitalName: string;
 
     @IsNotEmpty()
     @IsString()
@@ -93,17 +109,5 @@ export class AppointmentBookDto {
 
     @IsNotEmpty()
     @IsString()
-    hospitalName: string;
-
-    @IsNotEmpty()
-    @IsString()
     hospitalAddress: string;
-
-    @IsNotEmpty()
-    @IsString()
-    doctorName: string;
-
-    @IsNotEmpty()
-    @IsMongoId()
-    appointmentId: string;
 }

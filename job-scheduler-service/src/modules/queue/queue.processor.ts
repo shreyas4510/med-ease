@@ -19,7 +19,6 @@ export class QueueProcessor extends WorkerHost {
                 process.env.KAFKA_NOTIFICATION_TOPIC,
                 JSON.stringify(data)
             );
-            // TODO: send data to notification service and send email and whatsapp notification
         } catch (error) {
             console.error(`Error processing job: ${error.message}`);
             throw error;

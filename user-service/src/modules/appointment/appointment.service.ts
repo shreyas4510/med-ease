@@ -62,8 +62,6 @@ export class AppointmentService {
             });
             await appointment.save();
 
-            const appointmentTitle = `Appointment with Dr. ${doctorData.name} at ${slot} \nVenue: ${hospitalData.name} ,${hospitalData.city}`;
-
             const message = {
                 slotId: slot,
                 patientId: patient._id,
@@ -73,8 +71,7 @@ export class AppointmentService {
                 hospitalName: hospitalData.name,
                 hospitalAddress: `${hospitalData.city}, ${hospitalData.state} - ${hospitalData.zipCode}`,
                 doctorName: doctorData.name,
-                appointmentId: appointment._id,
-                appointmentTitle            
+                appointmentId: appointment._id
             };
 
             await this.kafkaService.sendMessage(

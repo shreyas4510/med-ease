@@ -4,7 +4,6 @@ import { DoctorService } from './doctor.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Doctor, DoctorSchema } from './doctor.schema';
 import { Hospital, HospitalSchema } from '../hospital/hospital.schema';
-import { KafkaService } from '../kafka/kafka.service';
 
 @Module({
   imports: [
@@ -14,9 +13,6 @@ import { KafkaService } from '../kafka/kafka.service';
     ]),
   ],
   controllers: [DoctorController],
-  providers: [
-    DoctorService,
-    KafkaService
-  ]
+  providers: [ DoctorService ]
 })
 export class DoctorModule {}

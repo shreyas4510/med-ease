@@ -1,14 +1,21 @@
-import { Injectable } from '@nestjs/common';
-import { SlotsDto, CreateSlotsDto, WeekDays } from './slots.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { SlotsDto, CreateSlotsDto, WeekDays, AppointmentBookDto } from './slots.dto';
 import * as moment from 'moment';
 import { InjectModel } from '@nestjs/mongoose';
 import { Slots, SlotsDocument } from './slots.schema';
 import { Model } from 'mongoose';
+import { QueueService } from '../queue/queue.service';
+import { QueueProcessor } from '../queue/queue.processor';
+import { Job } from './jobs.schema';
+import { Job as QueueJob } from 'bullmq';
 
 @Injectable()
 export class SlotsService {
     constructor(
-        @InjectModel(Slots.name) private slotsModal: Model<Slots>
+        @InjectModel(Slots.name) private slotsModel: Model<Slots>,
+        @InjectModel(Job.name) private jobModel: Model<Job>,
+        private queueService: QueueService,
+        private queueProcessor: QueueProcessor
     ) { }
 
 
@@ -25,7 +32,7 @@ export class SlotsService {
                     endTime
                 })
                 dayStartTime = endTime;
-            }   
+            }
         } catch (error) {
             throw error;
         }
@@ -35,14 +42,14 @@ export class SlotsService {
         try {
             let now = moment();
             let minutes = now.minutes();
-    
+
             let minutesToAdd = 15 - (minutes % 15);
             if (minutesToAdd === 15) {
                 minutesToAdd = 0;
             }
-    
+
             now.add(minutesToAdd, 'minutes');
-            return now.format('HH:mm');    
+            return now.format('HH:mm');
         } catch (error) {
             throw error;
         }
@@ -51,7 +58,7 @@ export class SlotsService {
     async saveSlots(finalSlots) {
         try {
             const slots = [...finalSlots];
-            await this.slotsModal.insertMany(slots)
+            await this.slotsModel.insertMany(slots)
         } catch (error) {
             if (error.code === 11000) {
                 // TODO: Notify frontend using Socket on duplicate records
@@ -113,24 +120,24 @@ export class SlotsService {
             let { startDate, endDate, weekDays } = data;
             let curDate = moment(startDate, 'DD-MM-YYYY');
             const dates = [];
-            while (curDate.isSameOrBefore( moment(endDate, 'DD-MM-YYYY') )) {
+            while (curDate.isSameOrBefore(moment(endDate, 'DD-MM-YYYY'))) {
                 const weekDay = curDate.format('ddd') as WeekDays;
                 if (!weekDays.includes(weekDay)) {
                     curDate = curDate.add(1, 'day');
                     continue;
                 }
-                dates.push( curDate.format('DD-MM-YYYY') );
+                dates.push(curDate.format('DD-MM-YYYY'));
                 curDate = curDate.add(1, 'day');
             }
 
-            await this.slotsModal.deleteMany({
+            await this.slotsModel.deleteMany({
                 date: {
                     $in: dates
                 },
                 hospitalId: data.hospital,
                 doctorId: data.doctor
             });
-            
+
             // TODO: Notify Frontend and slots deletion
         } catch (error) {
             throw error;
@@ -143,14 +150,14 @@ export class SlotsService {
 
             const dates = []
             let curDate = moment(startDate, 'DD-MM-YYYY');
-            while (curDate.isSameOrBefore( moment(endDate, 'DD-MM-YYYY') )) {
-                dates.push( curDate.format('DD-MM-YYYY') );
+            while (curDate.isSameOrBefore(moment(endDate, 'DD-MM-YYYY'))) {
+                dates.push(curDate.format('DD-MM-YYYY'));
                 curDate = curDate.add(1, 'day');
             }
 
-            const query: Record< string, string | boolean | object > = {
+            const query: Record<string, string | boolean | object> = {
                 date: {
-                    $in: dates 
+                    $in: dates
                 },
                 hospitalId: data.hospital,
                 doctorId: data.doctor
@@ -160,10 +167,96 @@ export class SlotsService {
                 query.status = 'AVAILABLE';
             }
 
-            const res = await this.slotsModal.find(query);
+            const res = await this.slotsModel.find(query);
             return res;
         } catch (error) {
             throw error;
         }
+    }
+
+    async calculateDelays(slot: Slots): Promise<{ preDelay: string, postDelay: string }> {
+        const startTime = moment(slot.startTime, 'hh:mm A');
+        const endTime = moment(slot.endTime, 'hh:mm A');
+
+        const preDelay = startTime.subtract(30, 'minutes').format('hh:mm A');
+        const postDelay = endTime.add(30, 'minutes').format('hh:mm A');
+
+        return { preDelay, postDelay };
+    }
+
+    async addJobToQueue(type: string, appointment: AppointmentBookDto, slot: Slots) {
+        const { preDelay, postDelay } = await this.calculateDelays(slot);
+
+        let jobTime: string;
+        let message: string;
+
+        if (type === 'PRE') {
+            jobTime = preDelay;
+            message = `Reminder: Appointment with Dr. ${appointment.doctorName} at ${slot.startTime}`;
+        } else {
+            jobTime = postDelay;
+            message = `Thanks for coming in today! I hope the appointment went well.`;
+        }
+
+        const job = new this.jobModel({
+            type,
+            time: jobTime,
+            date: slot.date,
+            appointmentId: appointment.appointmentId,
+            message,
+            contact: appointment.patientContact,
+        });
+        await job.save();
+
+        const delay = moment(`${slot.date}, ${jobTime}`, 'DD-MM-YYYY, hh:mm A').diff(
+            moment(), 'milliseconds'
+        );
+        await this.queueService.addJob({
+            patientName: appointment.patientName,
+            patientContact: appointment.patientContact,
+            patientEmail: appointment.patientEmail,
+            doctorName: appointment.doctorName,
+            hospitalName: appointment.hospitalName,
+            hospitalAddress: appointment.hospitalAddress,
+            message,
+            appointmentDate: slot.date,
+            appointmentTime: `${slot.startTime} - ${slot.endTime}`
+        }, delay);
+    }
+
+    async bookAppointment(appointment: AppointmentBookDto) {
+        const slot = await this.slotsModel.findOne({
+            _id: appointment.slotId,
+            status: 'AVAILABLE'
+        });
+        if (!slot) {
+            throw new NotFoundException('Slot not found.');
+        }
+
+        slot.title = appointment.appointmentTitle;
+        slot.patientId = appointment.patientId;
+        slot.status = 'BOOKED';
+        await slot.save();
+
+        const jobTypes = ['PRE', 'POST', 'BOOK'];
+        await Promise.all(jobTypes.map(type => {
+            if (type === 'BOOK') {
+                return this.queueProcessor.process({
+                    data: {
+                        patientName: appointment.patientName,
+                        patientContact: appointment.patientContact,
+                        patientEmail: appointment.patientEmail,
+                        doctorName: appointment.doctorName,
+                        hospitalName: appointment.hospitalName,
+                        hospitalAddress: appointment.hospitalAddress,
+                        message: appointment.appointmentTitle,
+                        appointmentDate: slot.date,
+                        appointmentTime: `${slot.startTime} - ${slot.endTime}`
+                    }
+                } as QueueJob);
+            } else {
+                return this.addJobToQueue(type, appointment, slot);
+            }
+        }));
     }
 }

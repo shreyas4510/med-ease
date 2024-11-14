@@ -17,15 +17,32 @@ export class KafkaService {
         this.consumeMessages();
     }
 
+    async sendMessage(topic: string, message: string) {
+        const producer = this.kafka.producer();
+        await producer.connect();
+        await producer.send({
+            topic,
+            messages: [{ value: message }],
+        });
+        await producer.disconnect();
+    }
+
     async processTopic( topic: string, payload ) {
         payload = JSON.parse(payload);
         switch (topic) {
             case process.env.KAFKA_USER_TOPIC:
-                if (payload.operation === 'CREATE') {
-                    this.slotService.createSlots(payload.data);
-                }
-                if (payload.operation === 'REMOVE') {
-                    this.slotService.removeSlots(payload.data);
+                switch (payload.operation) {
+                    case 'CREATE':
+                        this.slotService.createSlots(payload.data);
+                        break;
+                    case 'REMOVE':
+                        this.slotService.removeSlots(payload.data);
+                        break;
+                    case 'APPOINTMENT_BOOK':
+                        this.slotService.bookAppointment(payload.data);
+                        break
+                    default:
+                        break;
                 }
                 break;
             default:

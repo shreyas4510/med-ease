@@ -6,6 +6,7 @@ import { Slots, SlotsSchema } from '../slots/slots.schema';
 import { ConfigModule } from '@nestjs/config';
 import { QueueModule } from '../queue/queue.module';
 import { Job, JobSchema } from '../slots/jobs.schema';
+import { GatewayService } from '../../gateway/gateway.service';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { Job, JobSchema } from '../slots/jobs.schema';
   ],
   providers: [
     KafkaService,
-    SlotsService
+    SlotsService,
+    GatewayService
   ],
   exports: [KafkaService]
 })

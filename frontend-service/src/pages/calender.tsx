@@ -12,6 +12,8 @@ import { deleteSlots, getSlots, manageSlots } from '../api';
 import moment from 'moment';
 import toast from 'react-hot-toast';
 import { debounce } from 'lodash';
+import { useEffect } from 'react';
+import socket from '../socket';
 
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const DoctorCalendar = () => {
@@ -154,6 +156,12 @@ const DoctorCalendar = () => {
             selectedDays: newSelectedDays
         }));
     };
+
+    useEffect(() => {
+        socket.on('send-notification', (message) => {
+            toast.success(message);
+        })
+    },[])
 
     return (
         <div className="container mx-auto mt-10 p-5">

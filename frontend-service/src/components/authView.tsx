@@ -16,9 +16,9 @@ const AuthView = ({
     validationSchema,
     initialValues,
     handleSubmit,
-    handleLoginState = () => {},
+    handleLoginState = () => { },
     loginState
-}: TProps) => {    
+}: TProps) => {
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
@@ -98,12 +98,12 @@ const AuthView = ({
                         title.toLowerCase() === 'sign in' && (
                             <div className="w-full flex mb-4 !shadow-custom">
                                 <div
-                                    className={`w-full ${ loginState === 'hospital' ? 'text-white bg-custom-gradient' : 'border border-secondary' } py-3 font-medium cursor-pointer`}
+                                    className={`w-full ${loginState === 'hospital' ? 'text-white bg-custom-gradient' : 'border border-secondary'} py-3 font-medium cursor-pointer`}
                                     onClick={() => handleLoginState('hospital')}
                                 >Hospital</div>
                                 <div
-                                    className={`w-full ${ loginState === 'doctor' ? 'text-white bg-custom-gradient' : 'border border-secondary' } py-3 font-medium cursor-pointer`}
-                                    onClick={() => handleLoginState('doctor')}    
+                                    className={`w-full ${loginState === 'doctor' ? 'text-white bg-custom-gradient' : 'border border-secondary'} py-3 font-medium cursor-pointer`}
+                                    onClick={() => handleLoginState('doctor')}
                                 >Doctor</div>
                             </div>
                         )
@@ -113,14 +113,18 @@ const AuthView = ({
                         validationSchema={validationSchema}
                         onSubmit={handleSubmit}
                     >
-                        {({ values, setFieldValue, isSubmitting, dirty, isValid }) => (
-                            <Form className="grid grid-cols-2 gap-4" >
+                        {({ values, setFieldValue, isSubmitting, dirty, isValid, errors }) => {
+                            return <Form className="grid grid-cols-2 gap-4" >
                                 {
                                     formData.map((item, index) => (
                                         <div className={item.className} key={`auth-form-${item.label}-${index}`}>
                                             <label className="text-start text-blue-500 font-medium">{item.label}</label>
                                             {InputView(item, setFieldValue, values)}
-                                            <ErrorMessage name={item.name} component="div" className="text-start text-red-500 text-xs" />
+                                            <ErrorMessage
+                                                name={item.name}
+                                                component="div"
+                                                className="text-start text-red-500 text-xs"
+                                            />
                                         </div>
                                     ))
                                 }
@@ -130,7 +134,7 @@ const AuthView = ({
                                     className="mx-auto col-span-2 text-white bg-blue-500"
                                 >Submit</Button>
                             </Form>
-                        )}
+                        }}
                     </Formik>
                 </CardContent>
             </Card>

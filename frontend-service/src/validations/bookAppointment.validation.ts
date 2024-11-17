@@ -20,7 +20,7 @@ const bookAppointmentSchema = yup.object({
     appointmentDate: yup.date()
         .required('Appointment Date is required')
         .min(new Date(), 'Appointment date must be in the future'),
-    slots: yup.string().required('Slot is required'),
+    slot: yup.string().required('Slot is required'),
 });
 
 export default bookAppointmentSchema;

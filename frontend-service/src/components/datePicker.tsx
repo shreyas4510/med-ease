@@ -15,7 +15,7 @@ const CustomDatePicker = React.forwardRef<HTMLSelectElement, DatePickerProps>((p
                         format="DD-MM-YYYY"
                         value={field.value ? dayjs(field.value) : null}
                         minDate={dayjs(props.minDate)}
-                        onChange={(date) => props.setFieldValue(props.name, date)}
+                        onChange={(date) => props.setFieldValue(props.name, dayjs(date).toISOString())}
                     />
                 </LocalizationProvider>
             )}

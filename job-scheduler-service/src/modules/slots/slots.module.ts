@@ -6,6 +6,7 @@ import { SlotsService } from './slots.service';
 import { SlotsController } from './slots.controller';
 import { Job, JobSchema } from './jobs.schema';
 import { QueueModule } from '../queue/queue.module';
+import { GatewayService } from '../../gateway/gateway.service';
 
 @Module({
     imports: [
@@ -16,9 +17,9 @@ import { QueueModule } from '../queue/queue.module';
             { name: Slots.name, schema: SlotsSchema },
             { name: Job.name, schema: JobSchema },
         ]),
-        QueueModule
+        QueueModule,
     ],
-    providers: [SlotsService],
+    providers: [SlotsService, GatewayService],
     controllers: [SlotsController],
 })
 export class SlotsModule { }

@@ -135,6 +135,19 @@ export const getAvailableSlots = async (payload: Record<string, string | boolean
     }
 }
 
+export const bookAppointment = async (payload: Record<string, string>) => {
+    try {
+        return await api({
+            path: '/appointment',
+            method: 'post',
+            body: payload
+        });
+    } catch (error) {
+        toast.error((error as ApiError).message);
+    }
+};
+
+
 interface TProps {
     path: string;
     method: 'get' | 'put' | 'post' | 'delete';

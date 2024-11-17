@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import * as CryptoJs from "crypto-js";
 import Doctor from "../assets/images/doctor.png";
@@ -10,7 +10,7 @@ import { registerHospitalSchema, registerHospitalValues } from "../validations/r
 import { registerDoctorSchema, registerDoctorValues } from "../validations/registerDoctor.validation";
 import { loginSchema, loginValues } from "../validations/login.validations";
 import { useNavigate } from "react-router-dom";
-import { getAvailableSlots, getDoctorListByDepartment, getHospitalsList, login, registerDoctor, registerHospital } from "../api";
+import { bookAppointment, getAvailableSlots, getDoctorListByDepartment, getHospitalsList, login, registerDoctor, registerHospital } from "../api";
 import moment from "moment";
 import bookAppointmentSchema from "../validations/bookAppointment.validation";
 
@@ -27,7 +27,7 @@ const LandingPage = () => {
     speciality: '',
     doctor: '',
     appointmentDate: '',
-    slots: ''
+    slot: ''
   });
 
   const handleReset = () => {
@@ -84,12 +84,11 @@ const LandingPage = () => {
     }
   
     const onDateChange = async (id: string, values: Record<string, string>) => {
-  
       if (!(values.hospital && values.doctor)) {
         toast.error('Fill in all details and choose the date again');
         return;
       }
-  
+
       const date = moment(id).format('DD-MM-YYYY');
       const res = await getAvailableSlots({
         startDate: date,
@@ -110,16 +109,34 @@ const LandingPage = () => {
           };
         });
       }
-  
+
       setBookAppointmentFormData(() => ({
         ...values,
         appointmentDate: id
       }));
     }
 
-    const handleSubmit = ( values: Record<string, string> ) => {
-      console.log(values);
-      // TODO: api integration for appointment booking
+    const handleSubmit = async ( values: Record<string, string> ) => {
+      const res = await bookAppointment({
+        ...values,
+        appointmentDate: moment(values.appointmentDate).format('DD-MM-YYYY')
+      });
+      if (res) {
+        setBookAppointmentFormData({
+          name: '',
+          age: '',
+          contact: '',
+          email: '',
+          city: '',
+          hospital: '',
+          speciality: '',
+          doctor: '',
+          appointmentDate: '',
+          slot: ''
+        })
+        setAuth((prev) => ({ ...prev, view: authView.landingPage }));
+        toast.success('Thank you! You will be notified on appointment status');
+      }
     }
 
     return (
@@ -171,7 +188,7 @@ const LandingPage = () => {
           },
           {
             label: 'Slots',
-            name: 'slots',
+            name: 'slot',
             className: 'col-span-1 flex flex-col',
             type: 'select',
             isSearchable: true,

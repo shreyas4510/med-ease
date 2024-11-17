@@ -8,6 +8,7 @@ import { QueueService } from '../queue/queue.service';
 import { QueueProcessor } from '../queue/queue.processor';
 import { Job } from './jobs.schema';
 import { Job as QueueJob } from 'bullmq';
+import { GatewayService } from '../../gateway/gateway.service';
 
 @Injectable()
 export class SlotsService {
@@ -15,7 +16,8 @@ export class SlotsService {
         @InjectModel(Slots.name) private slotsModel: Model<Slots>,
         @InjectModel(Job.name) private jobModel: Model<Job>,
         private queueService: QueueService,
-        private queueProcessor: QueueProcessor
+        private queueProcessor: QueueProcessor,
+        private gatewayService: GatewayService
     ) { }
 
 
@@ -59,12 +61,15 @@ export class SlotsService {
         try {
             const slots = [...finalSlots];
             await this.slotsModel.insertMany(slots)
+            this.gatewayService.handleNotification('Slots created successfully');
         } catch (error) {
             if (error.code === 11000) {
-                // TODO: Notify frontend using Socket on duplicate records
+                this.gatewayService.handleNotification(
+                    'Error in creating slots duplicate slots created. Please try again'
+                );
             } else {
                 console.error('Error creating slot:', error);
-                // TODO: Notify frontend using Socket on error
+                this.gatewayService.handleNotification( error.message );
             }
         }
     }
@@ -138,7 +143,9 @@ export class SlotsService {
                 doctorId: data.doctor
             });
 
-            // TODO: Notify Frontend and slots deletion
+            this.gatewayService.handleNotification(
+                'Available slots are removed successfully. You will still find the booked slots'
+            );
         } catch (error) {
             throw error;
         }
